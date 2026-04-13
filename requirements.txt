@@ -17,3 +17,4 @@ pytest==8.3.4
 oneeurofilter==0.2.1
 onnx==1.20.1
 onnxruntime==1.23.2
+flet==0.84.0

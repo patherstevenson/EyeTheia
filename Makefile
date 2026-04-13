@@ -18,6 +18,9 @@ run:
 test:
 	$(PYTEST) $(TEST_PATH) -vv -W ignore::DeprecationWarning
 
+flet:
+	flet run -r src/main_flet.py
+
 lib:
 	pip install -r $(LIBS)
 	pip install torch==2.6.0 torchvision==0.21.0+cu124 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124
