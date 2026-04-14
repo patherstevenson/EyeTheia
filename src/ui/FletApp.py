@@ -11,10 +11,15 @@ async def main(page: ft.Page):
 
     gaze_manager = GazeManager()
 
-    data = [WordGroup(
-        ["a", "b", "a", "a"],
-        "a",
-         "")
+    data = [
+        WordGroup(
+            ["trait", "rond", "poule", "boule"],
+            "rond",
+            "pronunciation_fr_rond.mp3"),
+        WordGroup(
+            ["bas", "pas", "tarte", "permis"],
+            "bas",
+            "pronunciation_fr_bas.mp3"),
     ]
 
     page.window.always_on_top = True

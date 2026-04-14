@@ -6,7 +6,6 @@ def onCalibration():
 
 async def onWordExperiment(page: ft.Page):
     await page.push_route("/WordExperiment")
-    print("j'ai push")
 
 
 def onLoadCSV():
