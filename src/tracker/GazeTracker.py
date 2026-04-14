@@ -362,6 +362,7 @@ class GazeTracker:
             cv2.waitKey(1)
             angle = (angle + 18) % 360
 
+
     def run(self, webcam: cv2.VideoCapture) -> None:
         """
         Runs the gaze tracking loop, capturing frames and processing gaze estimation.
@@ -497,3 +498,90 @@ class GazeTracker:
         cv2.destroyWindow(self.window_name)
         cv2.destroyWindow("EyeTheia Controls")
         # self.logger.save_data()
+
+    def getGazeCoord(self, webcam, face_mesh):
+
+
+        start_time = time.perf_counter()
+
+        success, img = webcam.read()
+        if not success:
+            print("Error reading from the webcam.")
+            return (-1, -1)
+
+
+        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img_mp = face_mesh.process(img_rgb)
+
+
+        gaze_x_px = 0
+        gaze_y_px = 0
+
+        if img_mp.multi_face_landmarks:
+            for face_landmarks in img_mp.multi_face_landmarks:
+                face_input, left_eye_input, right_eye_input, face_grid_input = self.extract_features(
+                    img, face_landmarks, SCREEN_WIDTH, SCREEN_HEIGHT
+                )
+
+                gaze_x, gaze_y = self.predict_gaze(
+                    face_input, left_eye_input, right_eye_input, face_grid_input
+                )
+
+                match self.mp:
+                    case "itracker_mpiiface.tar":
+                        gx_px, gy_px = denormalized_MPIIFaceGaze(
+                            gaze_x, gaze_y, SCREEN_WIDTH, SCREEN_HEIGHT
+                        )
+                    case "itracker_baseline.tar":
+                        gx_px, gy_px = gaze_cm_to_pixels(
+                            gaze_x, gaze_y, SCREEN_WIDTH, SCREEN_HEIGHT
+                        )
+                    case _:
+                        raise ValueError("invalid model_path")
+
+                timestamp = time.perf_counter() - start_time
+
+
+                if self.gaze_filtered:
+                    gaze_x_px, gaze_y_px = self.filter_gaze_pixels(gx_px, gy_px, timestamp)
+                else:
+                    gaze_x_px, gaze_y_px = gx_px, gy_px
+
+
+
+        cx, cy = int(gaze_x_px), int(gaze_y_px)
+
+        return (cx, cy)
+
+    def calibrate(self, webcam):
+        calibration_dataset = self.calibration.run_calibration(webcam)
+
+        print("\nFine-tuning the model with calibration data...")
+
+        done_event = threading.Event()
+        result_holder = {}
+
+        def worker():
+            try:
+                self.train(calibration_dataset, epochs=EPOCH, learning_rate=LR, batch_size=BATCH_SIZE)
+                mean_error, std_error = self.calibration.evaluate_calibration_accuracy()
+                result_holder["mean_error"] = mean_error
+                result_holder["std_error"] = std_error
+                result_holder["error"] = None
+            except Exception as e:
+                result_holder["error"] = e
+            finally:
+                done_event.set()
+
+        thread = threading.Thread(target=worker, daemon=True)
+        thread.start()
+
+        self._show_loading_until_done(done_event)
+
+        cv2.destroyWindow(self.window_name)
+
+        if result_holder.get("error") is not None:
+            raise result_holder["error"]
+
+        mean_error = result_holder.get("mean_error", 0.0)
+        std_error = result_holder.get("std_error", 0.0)
