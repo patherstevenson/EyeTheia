@@ -1,10 +1,7 @@
 import asyncio
-import threading
 
+import GazeManager
 import flet as ft
-import mediapipe as mp
-
-from GazeManager import GazeManager
 from experiments.WordExperiment import WordExperiment
 
 
@@ -12,18 +9,18 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager):
     exp = WordExperiment(gaze_manager)
     cx_text = ft.Text("cx: -")
     cy_text = ft.Text("cy: -")
-    status_text = ft.Text("Status: idle")
+    status_text = ft.Text("Statut: idle")
 
-    state = {"running": False}
     queue = asyncio.Queue()
+    ui_loop = asyncio.get_running_loop()
+    state = {"process_started": False}
 
-    def produce_gaze(loop: asyncio.AbstractEventLoop):
-        with mp.solutions.face_mesh.FaceMesh(refine_landmarks=True, max_num_faces=1) as face_mesh:
-            while state["running"]:
-                cx, cy = exp.gaze_manager.getGazeCoords(face_mesh)
-                loop.call_soon_threadsafe(queue.put_nowait, (cx, cy))
+    def on_new_coords(cx, cy):
+        ui_loop.call_soon_threadsafe(queue.put_nowait, (cx, cy))
 
-    async def process_gaze():
+    exp.add_listener(on_new_coords)
+
+    async def process_results():
         while True:
             coords = await queue.get()
             if coords is None:
@@ -34,22 +31,23 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager):
             page.update()
 
     async def start_experiment(_):
-        if state["running"]:
-            return
-        state["running"] = True
+        if not state["process_started"]:
+            state["process_started"] = True
+            page.run_task(process_results)
         status_text.value = "Statut: running"
         page.update()
-
-        loop = asyncio.get_running_loop()
-        worker = threading.Thread(target=produce_gaze, args=(loop,), daemon=True)
-        worker.start()
-        page.run_task(process_gaze)
+        exp.start()
 
     def stop_experiment(_):
-        state["running"] = False
+        exp.stop()
         status_text.value = "Statut: stopped"
-        queue.put_nowait(None)
+        ui_loop.call_soon_threadsafe(queue.put_nowait, None)
+        state["process_started"] = False
         page.update()
+
+
+    async def back_to_main_menu(page: ft.Page):
+        await page.push_route("/")
 
     return ft.View(
         controls=[
@@ -59,13 +57,21 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager):
             ft.Row(
                 controls=[
                     ft.Button(
-                        content="Demarrer l'experience",
+                        content="Démarrer l'expérience",
                         on_click=start_experiment,
                     ),
                     ft.Button(
                         content="Stop",
                         on_click=stop_experiment,
                     ),
+                ]
+            ),
+            ft.Row(
+                controls=[
+                    ft.Button(
+                        content="MainMenu",
+                        on_click=lambda _: page.run_task(back_to_main_menu, page)
+                    )
                 ]
             ),
         ]
