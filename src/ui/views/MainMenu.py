@@ -1,3 +1,4 @@
+import GazeManager
 import flet as ft
 
 def onCalibration():
@@ -15,11 +16,11 @@ def onLoadCSV():
 def onSettings():
     print("Settings")
 
-def MainMenuView(page: ft.Page):
+def MainMenuView(page: ft.Page, gaze_manager: GazeManager):
     buttons = [
         ft.Button(
             content="Calibration",
-            on_click=onCalibration
+            on_click=gaze_manager.calibrate
         ),
         ft.Button(
             content="WordTest",
