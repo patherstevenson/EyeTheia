@@ -27,3 +27,5 @@ class GazeManager:
 
         self.gaze_tracker.calibrate(self.webcam);
 
+    def getGazeCoords(self, face_mesh):
+        return self.gaze_tracker.getGazeCoord(self.webcam, face_mesh)

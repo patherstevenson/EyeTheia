@@ -21,7 +21,7 @@ async def main(page: ft.Page):
                 page.views.append(MainMenuView(page, gaze_manager))
 
             case "/WordExperiment":
-                page.views.append(WordExperimentView(gaze_manager))
+                page.views.append(WordExperimentView(page, gaze_manager))
 
     page.on_route_change = route_change
 
