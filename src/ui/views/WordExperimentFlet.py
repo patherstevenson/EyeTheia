@@ -16,7 +16,7 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager, word_groups: [W
     words = [
         ft.Button(
             content=ft.Text(word),
-            on_click=lambda _, i=index: choose(i)
+            on_click=lambda _, i=index: page.run_task(choose, i)
         )
         for index, word in enumerate(word_groups[0].words)
     ]
@@ -25,9 +25,23 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager, word_groups: [W
         for word_index, button in enumerate(words):
             button.content.value = word_groups[group_index].words[word_index]
 
-    def choose(index):
+    async def choose(index):
         exp.choose(index)
-        setWordGroup(exp.actual_group_index)
+
+        container.controls = [
+            ft.Icon(
+                icon=ft.Icons.ADD,
+                size=100,
+                color="black",
+            )
+        ]
+        page.update()
+
+        await asyncio.sleep(3)
+
+        if exp.actual_group_index < len(word_groups):
+            setWordGroup(exp.actual_group_index)
+        container.controls = words
         page.update()
 
     queue = asyncio.Queue()

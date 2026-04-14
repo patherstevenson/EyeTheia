@@ -42,4 +42,4 @@ class WordExperiment:
 
     def choose(self, index):
         self.resuts.append(index)
-        self.actual_group_index =+ 1
+        self.actual_group_index += 1
