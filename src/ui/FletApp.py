@@ -1,3 +1,4 @@
+from experiments.WordGroup import WordGroup
 from ui.views.MainMenu import MainMenuView
 from ui.views.WordExperimentFlet import WordExperimentView
 import flet as ft
@@ -10,6 +11,12 @@ async def main(page: ft.Page):
 
     gaze_manager = GazeManager()
 
+    data = [WordGroup(
+        ["a", "b", "a", "a"],
+        "a",
+         "")
+    ]
+
     page.window.always_on_top = True
 
     page.views.append(MainMenuView(page, gaze_manager))
@@ -21,7 +28,7 @@ async def main(page: ft.Page):
                 page.views.append(MainMenuView(page, gaze_manager))
 
             case "/WordExperiment":
-                page.views.append(WordExperimentView(page, gaze_manager))
+                page.views.append(WordExperimentView(page, gaze_manager, data))
 
     page.on_route_change = route_change
 

@@ -10,6 +10,7 @@ class WordExperiment:
         self.last_coords = None
         self._thread = None
         self._listeners = []
+        self.resuts = []
 
     def add_listener(self, listener):
         self._listeners.append(listener)
@@ -35,3 +36,7 @@ class WordExperiment:
                 cx, cy = self.gaze_manager.getGazeCoords(face_mesh)
                 self.last_coords = (cx, cy)
                 self._notify(cx, cy)
+
+
+    def choose(self, index):
+        self.resuts.append(index)
