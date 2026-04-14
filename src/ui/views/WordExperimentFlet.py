@@ -10,16 +10,41 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager, word_groups: [W
     exp = WordExperiment(gaze_manager, word_groups)
     cx_text = ft.Text("cx: -")
     cy_text = ft.Text("cy: -")
+    quarter_width = max((page.window.width or 1200) / 2 - 24, 200)
+    quarter_height = max((page.window.height or 800) / 2 - 24, 140)
 
-    container = ft.Column(controls=[])
+    container = ft.Column(
+        controls=[],
+        expand=True,
+        alignment=ft.MainAxisAlignment.CENTER,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+    )
 
     words = [
         ft.Button(
             content=ft.Text(word),
+            width=quarter_width,
+            height=quarter_height,
             on_click=lambda _, i=index: page.run_task(choose, i)
         )
         for index, word in enumerate(word_groups[0].words)
     ]
+
+    words_grid = ft.Column(
+        controls=[
+            ft.Row(
+                controls=words[:2],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ),
+            ft.Row(
+                controls=words[2:4],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ),
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        spacing=16,
+    )
 
     def setWordGroup(group_index):
         for word_index, button in enumerate(words):
@@ -41,7 +66,7 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager, word_groups: [W
 
         if exp.actual_group_index < len(word_groups):
             setWordGroup(exp.actual_group_index)
-        container.controls = words
+        container.controls = [words_grid]
         page.update()
 
     queue = asyncio.Queue()
@@ -68,7 +93,7 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager, word_groups: [W
             state["process_started"] = True
             page.run_task(process_results)
         exp.start()
-        container.controls = words
+        container.controls = [words_grid]
         page.update()
 
     def stop_experiment(_):
@@ -104,5 +129,7 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager, word_groups: [W
     ]
 
     return ft.View(
-        controls=container
+        controls=[container],
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        vertical_alignment=ft.MainAxisAlignment.CENTER,
     )
