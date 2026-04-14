@@ -1,5 +1,7 @@
 import asyncio
 
+
+from playsound3 import playsound
 import GazeManager
 import flet as ft
 from experiments import WordGroup
@@ -46,9 +48,15 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager, word_groups: [W
         spacing=16,
     )
 
-    def setWordGroup(group_index):
+    def set_word_group(group_index):
         for word_index, button in enumerate(words):
             button.content.value = word_groups[group_index].words[word_index]
+
+    def show_word_group(group_index):
+        set_word_group(group_index)
+        container.controls = [words_grid]
+        playsound("src/experiments/res/sounds/" + word_groups[exp.actual_index].sound)
+        page.update()
 
     async def choose(index):
         exp.choose(index)
@@ -64,10 +72,8 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager, word_groups: [W
 
         await asyncio.sleep(3)
 
-        if exp.actual_group_index < len(word_groups):
-            setWordGroup(exp.actual_group_index)
-        container.controls = [words_grid]
-        page.update()
+        if exp.actual_index < len(word_groups):
+            show_word_group(exp.actual_index)
 
     queue = asyncio.Queue()
     ui_loop = asyncio.get_running_loop()
@@ -93,8 +99,7 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager, word_groups: [W
             state["process_started"] = True
             page.run_task(process_results)
         exp.start()
-        container.controls = [words_grid]
-        page.update()
+        show_word_group(exp.actual_index)
 
     def stop_experiment(_):
         exp.stop()

@@ -15,7 +15,7 @@ async def main(page: ft.Page):
         WordGroup(
             ["trait", "rond", "poule", "boule"],
             "rond",
-            "pronunciation_fr_rond.mp3"),
+            "pronunciation_fr_poule.mp3"),
         WordGroup(
             ["bas", "pas", "tarte", "permis"],
             "bas",

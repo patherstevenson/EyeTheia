@@ -6,7 +6,7 @@ import mediapipe as mp
 class WordExperiment:
     def __init__(self, gaze_manager: GazeManager, word_groups):
         self.word_groups = word_groups
-        self.actual_group_index = 0
+        self.actual_index = 0
         self.gaze_manager : GazeManager = gaze_manager
         self.running = False
         self.last_coords = None
@@ -42,4 +42,4 @@ class WordExperiment:
 
     def choose(self, index):
         self.resuts.append(index)
-        self.actual_group_index += 1
+        self.actual_index += 1
