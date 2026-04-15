@@ -10,8 +10,8 @@ def WordExperimentView(page: ft.Page, state: AppState):
     exp = WordExperiment(state)
     cx_text = ft.Text("cx: -")
     cy_text = ft.Text("cy: -")
-    quarter_width = max((page.window.width or 1200) / 2 - 24, 200)
-    quarter_height = max((page.window.height or 800) / 2 - 24, 140)
+    quarter_width = max((page.window.width or 1200) / 2 - 24, 200) * state.settings.buttons_size
+    quarter_height = max((page.window.height or 800) / 2 - 24, 140) * state.settings.buttons_size
 
     container = ft.Column(
         controls=[],
@@ -54,12 +54,10 @@ def WordExperimentView(page: ft.Page, state: AppState):
     def show_word_group():
         set_word_group()
         container.controls = [words_grid]
-        playsound("src/experiments/wordExperiment/res/sounds/" + exp.get_current_sound())
         page.update()
+        playsound("src/experiments/wordExperiment/res/sounds/" + exp.get_current_sound())
 
-    async def choose(index):
-        exp.choose(index)
-
+    def show_plus():
         container.controls = [
             ft.Icon(
                 icon=ft.Icons.ADD,
@@ -69,14 +67,14 @@ def WordExperimentView(page: ft.Page, state: AppState):
         ]
         page.update()
 
-        await asyncio.sleep(3)
-
-        if not exp.is_finished():
-            show_word_group()
+    async def choose(index):
+        exp._listeners["show_plus"] = show_plus
+        exp._listeners["show_word_group"] = show_word_group
+        await exp.choose(index)
 
     queue = asyncio.Queue()
     ui_loop = asyncio.get_running_loop()
-    state = {"process_started": False}
+    process_state = {"process_started": False}
 
     def on_new_coords(cx, cy):
         ui_loop.call_soon_threadsafe(queue.put_nowait, (cx, cy))
@@ -94,16 +92,16 @@ def WordExperimentView(page: ft.Page, state: AppState):
             page.update()
 
     async def start_experiment(_):
-        if not state["process_started"]:
-            state["process_started"] = True
+        if not process_state["process_started"]:
+            process_state["process_started"] = True
             page.run_task(process_results)
         exp.start()
         show_word_group()
 
-    def stop_experiment(_):
+    def stop_experiment():
         exp.stop()
         ui_loop.call_soon_threadsafe(queue.put_nowait, None)
-        state["process_started"] = False
+        process_state["process_started"] = False
         page.update()
 
         page.run_task(back_to_main_menu, page)

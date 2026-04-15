@@ -1,6 +1,7 @@
 import flet as ft
 from GazeManager import GazeManager
 from experiments.wordExperiment.WordGroup import WordGroup
+from ui.AppSettings import WordExperimentSettings
 from ui.AppState import AppState
 from ui.views.MainMenu import MainMenuView
 from ui.views.WordExperimentFlet import WordExperimentView
@@ -12,6 +13,7 @@ async def main(page: ft.Page):
 
     state = AppState(
         gaze_manager=GazeManager(),
+        settings=WordExperimentSettings(),
         word_groups=[
             WordGroup(
                 ["trait", "rond", "poule", "boule"],
@@ -43,3 +45,5 @@ async def main(page: ft.Page):
     page.views.append(MainMenuView(page, state))
 
     await page.push_route("/")
+
+    

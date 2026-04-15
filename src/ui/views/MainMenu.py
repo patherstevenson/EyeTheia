@@ -8,6 +8,7 @@ from ui.AppState import AppState
 def onCalibration():
     print("Calibration")
 
+
 async def onWordExperiment(page: ft.Page):
     await page.push_route("/WordExperiment")
 
@@ -15,10 +16,16 @@ async def onWordExperiment(page: ft.Page):
 async def onLoadCSV(state: AppState):
     print("Load CSV")
     file_path = await ft.FilePicker().pick_files(allow_multiple=False)
-    if not file_path:
-        return
 
-    with open(file_path[0].path, newline='') as csvfile:
+    if not file_path:
+        file_path = "src/experiments/wordExperiment/res/WordData.csv"
+    else:
+        file_path = file_path[0].path
+
+    await loadCSV(file_path, state)
+
+async def loadCSV(file_path, state):
+    with open(file_path, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         wordData = []
 
@@ -31,11 +38,9 @@ async def onLoadCSV(state: AppState):
 
 
 
-
-
-
 def onSettings():
     print("Settings")
+
 
 def MainMenuView(page: ft.Page, state: AppState):
     buttons = [
