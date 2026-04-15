@@ -1,0 +1,85 @@
+import threading
+import time
+
+import GazeManager
+import mediapipe as mp
+import asyncio
+from ui import AppState
+
+
+class WordExperiment:
+    def __init__(self, state: AppState):
+        self.word_groups = state.word_groups
+        self.actual_index = 0
+        self.gaze_manager: GazeManager = state.gaze_manager
+        self.running = False
+        self.last_coords = None
+        self._thread = None
+        self._listeners = {}
+        self.resuts = []
+        self.state: AppState = state
+        self.last_group_date = time.time()
+
+    def add_finish_listener(self, finish_listener):
+        self._listeners["finish"] = finish_listener
+
+    def add_listener(self, listener):
+        self._listeners["coords"] = listener
+
+    async def start(self):
+        if self.running:
+            return
+
+        self.running = True
+        self._thread = threading.Thread(target=asyncio.run, args=(self._run_loop(),), daemon=True)
+        self._thread.start()
+
+    def stop(self):
+        self.running = False
+
+    async def _run_loop(self):
+        with mp.solutions.face_mesh.FaceMesh(refine_landmarks=True, max_num_faces=1) as face_mesh:
+            while self.running:
+                cx, cy = self.gaze_manager.getGazeCoords(face_mesh)
+                self.last_coords = (cx, cy)
+                self._listeners["coords"](cx, cy)
+                if (time.time() - self.last_group_date >= self.state.settings.max_time_to_choose):
+                    await self.choose(-1)
+
+    def has_current_group(self):
+        return self.actual_index < len(self.word_groups)
+
+    def get_current_group(self):
+        if not self.has_current_group():
+            return None
+        return self.word_groups[self.actual_index]
+
+    def get_current_words(self):
+        current_group = self.get_current_group()
+        if current_group is None:
+            return []
+        return current_group.words
+
+    def get_current_sound(self):
+        current_group = self.get_current_group()
+        if current_group is None:
+            return ""
+        return current_group.sound
+
+    def is_finished(self):
+        return not self.has_current_group()
+
+    async def choose(self, index):
+        self.resuts.append(index)
+        self.last_group_date = time.time()
+
+        self.actual_index += 1
+
+        if self.is_finished() and self._listeners["finish"] is not None:
+            self._listeners["finish"]()
+        else:
+            self._listeners["show_plus"]()
+
+            await asyncio.sleep(self.state.settings.time_to_wait_between)
+
+            self._listeners["show_word_group"]()
