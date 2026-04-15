@@ -11,7 +11,7 @@ async def main(page: ft.Page):
 
     gaze_manager = GazeManager()
 
-    data = [
+    word_groups = [
         WordGroup(
             ["trait", "rond", "poule", "boule"],
             "rond",
@@ -24,16 +24,24 @@ async def main(page: ft.Page):
 
     page.window.always_on_top = True
 
-    page.views.append(MainMenuView(page, gaze_manager))
+    async def change_word_groups(new_word_groups):
+        word_groups.clear()
+        word_groups.extend(new_word_groups)
+        print("ça a été changé")
+
+    page.views.append(MainMenuView(page, gaze_manager, change_word_groups))
+
 
     async def route_change(e: ft.RouteChangeEvent):
         page.views.clear()
         match e.route:
             case "/":
-                page.views.append(MainMenuView(page, gaze_manager))
+                page.views.append(MainMenuView(page, gaze_manager, change_word_groups))
 
             case "/WordExperiment":
-                page.views.append(WordExperimentView(page, gaze_manager, data))
+                page.views.append(WordExperimentView(page, gaze_manager, word_groups))
+                print(len(word_groups))
+
 
     page.on_route_change = route_change
 
