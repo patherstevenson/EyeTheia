@@ -1,6 +1,5 @@
 import asyncio
 
-
 from playsound3 import playsound
 import GazeManager
 import flet as ft
@@ -29,7 +28,7 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager, word_groups: [W
             height=quarter_height,
             on_click=lambda _, i=index: page.run_task(choose, i)
         )
-        for index, word in enumerate(word_groups[0].words)
+        for index, word in enumerate(exp.get_current_words())
     ]
 
     words_grid = ft.Column(
@@ -48,14 +47,15 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager, word_groups: [W
         spacing=16,
     )
 
-    def set_word_group(group_index):
+    def set_word_group():
+        current_words = exp.get_current_words()
         for word_index, button in enumerate(words):
-            button.content.value = word_groups[group_index].words[word_index]
+            button.content.value = current_words[word_index]
 
-    def show_word_group(group_index):
-        set_word_group(group_index)
+    def show_word_group():
+        set_word_group()
         container.controls = [words_grid]
-        playsound("src/experiments/res/sounds/" + word_groups[exp.actual_index].sound)
+        playsound("src/experiments/res/sounds/" + exp.get_current_sound())
         page.update()
 
     async def choose(index):
@@ -72,8 +72,8 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager, word_groups: [W
 
         await asyncio.sleep(3)
 
-        if exp.actual_index < len(word_groups):
-            show_word_group(exp.actual_index)
+        if not exp.is_finished():
+            show_word_group()
 
     queue = asyncio.Queue()
     ui_loop = asyncio.get_running_loop()
@@ -99,13 +99,17 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager, word_groups: [W
             state["process_started"] = True
             page.run_task(process_results)
         exp.start()
-        show_word_group(exp.actual_index)
+        show_word_group()
 
     def stop_experiment(_):
         exp.stop()
         ui_loop.call_soon_threadsafe(queue.put_nowait, None)
         state["process_started"] = False
         page.update()
+
+        page.run_task(back_to_main_menu, page)
+
+    exp.add_finish_listener(stop_experiment)
 
     async def back_to_main_menu(page: ft.Page):
         await page.push_route("/")
@@ -118,17 +122,9 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager, word_groups: [W
                     on_click=start_experiment,
                 ),
                 ft.Button(
-                    content="Stop",
-                    on_click=stop_experiment,
-                ),
-            ]
-        ),
-        ft.Row(
-            controls=[
-                ft.Button(
                     content="MainMenu",
                     on_click=lambda _: page.run_task(back_to_main_menu, page)
-                )
+                ),
             ]
         ),
     ]
