@@ -51,12 +51,6 @@ def WordExperimentView(page: ft.Page, state: AppState):
         for word_index, button in enumerate(words):
             button.content.value = current_words[word_index]
 
-    def show_word_group():
-        set_word_group()
-        container.controls = [words_grid]
-        page.update()
-        playsound("src/experiments/wordExperiment/res/sounds/" + exp.get_current_sound())
-
     def show_plus():
         container.controls = [
             ft.Icon(
@@ -67,9 +61,16 @@ def WordExperimentView(page: ft.Page, state: AppState):
         ]
         page.update()
 
+    def show_word_group():
+        set_word_group()
+        container.controls = [words_grid]
+        page.update()
+        playsound("src/experiments/wordExperiment/res/sounds/" + exp.get_current_sound())
+
+    exp._listeners["show_plus"] = show_plus
+    exp._listeners["show_word_group"] = show_word_group
+
     async def choose(index):
-        exp._listeners["show_plus"] = show_plus
-        exp._listeners["show_word_group"] = show_word_group
         await exp.choose(index)
 
     queue = asyncio.Queue()
@@ -95,7 +96,7 @@ def WordExperimentView(page: ft.Page, state: AppState):
         if not process_state["process_started"]:
             process_state["process_started"] = True
             page.run_task(process_results)
-        exp.start()
+        await exp.start()
         show_word_group()
 
     def stop_experiment():
