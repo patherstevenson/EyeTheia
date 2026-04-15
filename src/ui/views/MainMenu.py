@@ -1,8 +1,8 @@
-import GazeManager
-import flet as ft
 import csv
 
-from experiments.WordGroup import WordGroup
+import flet as ft
+from experiments.wordExperiment.WordGroup import WordGroup
+from ui.AppState import AppState
 
 
 def onCalibration():
@@ -12,9 +12,11 @@ async def onWordExperiment(page: ft.Page):
     await page.push_route("/WordExperiment")
 
 
-async def onLoadCSV(change_word_groups):
+async def onLoadCSV(state: AppState):
     print("Load CSV")
     file_path = await ft.FilePicker().pick_files(allow_multiple=False)
+    if not file_path:
+        return
 
     with open(file_path[0].path, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
@@ -24,7 +26,7 @@ async def onLoadCSV(change_word_groups):
             print(row)
             wordData.append(WordGroup(row[:4], row[4], row[5]))
 
-        await change_word_groups(wordData)
+        state.set_word_groups(wordData)
         print(str(len(wordData)))
 
 
@@ -35,11 +37,11 @@ async def onLoadCSV(change_word_groups):
 def onSettings():
     print("Settings")
 
-def MainMenuView(page: ft.Page, gaze_manager: GazeManager, change_word_groups):
+def MainMenuView(page: ft.Page, state: AppState):
     buttons = [
         ft.Button(
             content="Calibration",
-            on_click=gaze_manager.calibrate
+            on_click=state.gaze_manager.calibrate
         ),
         ft.Button(
             content="WordTest",
@@ -47,7 +49,7 @@ def MainMenuView(page: ft.Page, gaze_manager: GazeManager, change_word_groups):
         ),
         ft.Button(
             content="LoadCSV",
-            on_click=lambda _: page.run_task(onLoadCSV, change_word_groups)
+            on_click=lambda _: page.run_task(onLoadCSV, state)
         ),
         ft.Button(
             content="Settings",

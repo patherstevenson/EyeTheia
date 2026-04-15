@@ -1,14 +1,13 @@
 import asyncio
 
 from playsound3 import playsound
-import GazeManager
 import flet as ft
-from experiments import WordGroup
-from experiments.WordExperiment import WordExperiment
+from experiments.wordExperiment.WordExperiment import WordExperiment
+from ui.AppState import AppState
 
 
-def WordExperimentView(page: ft.Page, gaze_manager: GazeManager, word_groups: [WordGroup]):
-    exp = WordExperiment(gaze_manager, word_groups)
+def WordExperimentView(page: ft.Page, state: AppState):
+    exp = WordExperiment(state)
     cx_text = ft.Text("cx: -")
     cy_text = ft.Text("cy: -")
     quarter_width = max((page.window.width or 1200) / 2 - 24, 200)
@@ -55,7 +54,7 @@ def WordExperimentView(page: ft.Page, gaze_manager: GazeManager, word_groups: [W
     def show_word_group():
         set_word_group()
         container.controls = [words_grid]
-        playsound("src/experiments/res/sounds/" + exp.get_current_sound())
+        playsound("src/experiments/wordExperiment/res/sounds/" + exp.get_current_sound())
         page.update()
 
     async def choose(index):
