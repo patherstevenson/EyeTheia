@@ -24,6 +24,7 @@ async def onLoadCSV(state: AppState):
 
     await loadCSV(file_path, state)
 
+
 async def loadCSV(file_path, state):
     with open(file_path, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
@@ -35,7 +36,6 @@ async def loadCSV(file_path, state):
 
         state.set_word_groups(wordData)
         print(str(len(wordData)))
-
 
 
 def onSettings():
@@ -55,6 +55,10 @@ def MainMenuView(page: ft.Page, state: AppState):
         ft.Button(
             content="LoadCSV",
             on_click=lambda _: page.run_task(onLoadCSV, state)
+        ),
+        ft.Button(
+            content="FastCSV",
+            on_click=lambda _: page.run_task(loadCSV, "src/experiments/wordExperiment/res/WordData.csv", state)
         ),
         ft.Button(
             content="Settings",

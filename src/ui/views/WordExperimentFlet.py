@@ -8,6 +8,9 @@ from ui.AppState import AppState
 
 def WordExperimentView(page: ft.Page, state: AppState):
     exp = WordExperiment(state)
+
+
+
     cx_text = ft.Text("cx: -")
     cy_text = ft.Text("cy: -")
     quarter_width = max((page.window.width or 1200) / 2 - 24, 200) * state.settings.buttons_size
@@ -25,7 +28,7 @@ def WordExperimentView(page: ft.Page, state: AppState):
             content=ft.Text(word),
             width=quarter_width,
             height=quarter_height,
-            on_click=lambda _, i=index: page.run_task(choose, i)
+            on_click=lambda _, i=index: page.run_task(exp.choose, i)
         )
         for index, word in enumerate(exp.get_current_words())
     ]
@@ -48,6 +51,7 @@ def WordExperimentView(page: ft.Page, state: AppState):
 
     def set_word_group():
         current_words = exp.get_current_words()
+        exp.new_group()
         for word_index, button in enumerate(words):
             button.content.value = current_words[word_index]
 
@@ -70,9 +74,6 @@ def WordExperimentView(page: ft.Page, state: AppState):
     exp._listeners["show_plus"] = show_plus
     exp._listeners["show_word_group"] = show_word_group
 
-    async def choose(index):
-        await exp.choose(index)
-
     queue = asyncio.Queue()
     ui_loop = asyncio.get_running_loop()
     process_state = {"process_started": False}
@@ -82,20 +83,9 @@ def WordExperimentView(page: ft.Page, state: AppState):
 
     exp.add_listener(on_new_coords)
 
-    async def process_results():
-        while True:
-            coords = await queue.get()
-            if coords is None:
-                break
-            cx, cy = coords
-            cx_text.value = f"cx: {cx}"
-            cy_text.value = f"cy: {cy}"
-            page.update()
-
     async def start_experiment(_):
         if not process_state["process_started"]:
             process_state["process_started"] = True
-            page.run_task(process_results)
         await exp.start()
         show_word_group()
 
@@ -104,6 +94,9 @@ def WordExperimentView(page: ft.Page, state: AppState):
         ui_loop.call_soon_threadsafe(queue.put_nowait, None)
         process_state["process_started"] = False
         page.update()
+
+        for res in exp.results.values():
+            print(str(res))
 
         page.run_task(back_to_main_menu, page)
 

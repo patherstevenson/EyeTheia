@@ -4,19 +4,23 @@ import time
 import GazeManager
 import mediapipe as mp
 import asyncio
+
+from experiments.wordExperiment import WordGroup
+from experiments.wordExperiment.GroupResults import GroupResults
 from ui import AppState
 
 
 class WordExperiment:
     def __init__(self, state: AppState):
         self.word_groups = state.word_groups
+
         self.actual_index = 0
         self.gaze_manager: GazeManager = state.gaze_manager
         self.running = False
         self.last_coords = None
         self._thread = None
         self._listeners = {}
-        self.resuts = []
+        self.results : dict[GroupResults]= {}
         self.state: AppState = state
         self.last_group_date = time.time()
 
@@ -49,7 +53,7 @@ class WordExperiment:
     def has_current_group(self):
         return self.actual_index < len(self.word_groups)
 
-    def get_current_group(self):
+    def get_current_group(self) -> WordGroup:
         if not self.has_current_group():
             return None
         return self.word_groups[self.actual_index]
@@ -69,9 +73,11 @@ class WordExperiment:
     def is_finished(self):
         return not self.has_current_group()
 
+    def new_group(self):
+        self.results[self.actual_index] = GroupResults(self.actual_index, self.get_current_group().words)
+
     async def choose(self, index):
-        self.resuts.append(index)
-        self.last_group_date = time.time()
+        self.results[self.actual_index].selected = index
 
         self.actual_index += 1
 
@@ -81,5 +87,6 @@ class WordExperiment:
             self._listeners["show_plus"]()
 
             await asyncio.sleep(self.state.settings.time_to_wait_between)
+            self.last_group_date = time.time()
 
             self._listeners["show_word_group"]()
