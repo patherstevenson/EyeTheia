@@ -8,6 +8,7 @@ import asyncio
 from experiments.wordExperiment import WordGroup
 from experiments.wordExperiment.GroupResults import GroupResults
 from ui import AppState
+from utils.config import SCREEN_WIDTH, SCREEN_HEIGHT
 
 
 class WordExperiment:
@@ -51,8 +52,27 @@ class WordExperiment:
                 cx, cy = self.gaze_manager.getGazeCoords(face_mesh)
                 self.last_coords = (cx, cy)
                 self._listeners["coords"](cx, cy)
+
+                if len(self.results) > self.actual_index is not None:
+                    self.results[self.actual_index].gaze_score[self.get_button_index()] += 1
+
                 if (time.time() - self.last_group_date >= self.state.settings.max_time_to_choose):
                     await self.choose(-1)
+
+    def get_button_index(self):
+        """Return button index based on where the patient is looking
+        :return : The index of the looked button. 4 if no face is detected"""
+        (cx, cy) = self.last_coords
+        if (cx == -1 & cy == -1):
+            return 4
+        else:
+            result = 0
+            if cx > (SCREEN_WIDTH / 2):
+                result = result + 1
+            if cy > (SCREEN_HEIGHT / 2):
+                result = result + 2
+
+            return result
 
     def has_current_group(self):
         return self.actual_index < len(self.word_groups)

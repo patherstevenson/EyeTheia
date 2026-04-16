@@ -21,4 +21,4 @@ class GroupResults:
 
 
     def __str__(self):
-        return str(self.index) + " : " + str(self.words) + " | " + self.get_selected_word()
+        return str(self.index) + " : " + str(self.words) + " | " + self.get_selected_word() + " | " + str(self.gaze_score)

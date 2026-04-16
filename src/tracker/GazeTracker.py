@@ -514,8 +514,8 @@ class GazeTracker:
         img_mp = face_mesh.process(img_rgb)
 
 
-        gaze_x_px = 0
-        gaze_y_px = 0
+        gaze_x_px = -1
+        gaze_y_px = -1
 
         if img_mp.multi_face_landmarks:
             for face_landmarks in img_mp.multi_face_landmarks:
