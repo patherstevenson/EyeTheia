@@ -20,15 +20,9 @@ class WordExperiment:
         self.last_coords = None
         self._thread = None
         self._listeners = {}
-        self.results : dict[GroupResults]= {}
+        self.results: dict[GroupResults] = {}
         self.state: AppState = state
         self.last_group_date = time.time()
-
-    def add_finish_listener(self, finish_listener):
-        self._listeners["finish"] = finish_listener
-
-    def add_listener(self, listener):
-        self._listeners["coords"] = listener
 
     async def start(self):
         if self.running:
@@ -37,6 +31,16 @@ class WordExperiment:
         self.running = True
         self._thread = threading.Thread(target=asyncio.run, args=(self._run_loop(),), daemon=True)
         self._thread.start()
+
+        self.actual_index = 0
+
+        await self.set_word_group()
+
+    def add_finish_listener(self, finish_listener):
+        self._listeners["finish"] = finish_listener
+
+    def add_listener(self, listener):
+        self._listeners["coords"] = listener
 
     def stop(self):
         self.running = False
@@ -73,20 +77,24 @@ class WordExperiment:
     def is_finished(self):
         return not self.has_current_group()
 
-    def new_group(self):
+    async def new_group(self):
+        self.actual_index += 1
+
+        await self.set_word_group()
+
+    async def set_word_group(self):
+        await self._listeners["show_word_group"]()
         self.results[self.actual_index] = GroupResults(self.actual_index, self.get_current_group().words)
 
     async def choose(self, index):
+
         self.results[self.actual_index].selected = index
 
-        self.actual_index += 1
-
-        if self.is_finished() and self._listeners["finish"] is not None:
-            self._listeners["finish"]()
-        else:
+        if (self.actual_index < len(self.word_groups) - 1):
             self._listeners["show_plus"]()
-
             await asyncio.sleep(self.state.settings.time_to_wait_between)
             self.last_group_date = time.time()
+            await self.new_group()
 
-            self._listeners["show_word_group"]()
+        else:
+            self._listeners["finish"]()

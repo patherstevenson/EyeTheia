@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 
 from GazeManager import GazeManager
+from experiments.wordExperiment.GroupResults import GroupResults
 from experiments.wordExperiment.WordGroup import WordGroup
 from ui.AppSettings import WordExperimentSettings
 
@@ -10,6 +11,7 @@ class AppState:
     gaze_manager: GazeManager
     settings: WordExperimentSettings
     word_groups: list[WordGroup] = field(default_factory=list)
+    results: dict[int, GroupResults] = field(default_factory=dict)
 
     def set_word_groups(self, new_word_groups: list[WordGroup]):
         self.word_groups.clear()

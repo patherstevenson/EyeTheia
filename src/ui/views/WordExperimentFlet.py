@@ -49,12 +49,6 @@ def WordExperimentView(page: ft.Page, state: AppState):
         spacing=16,
     )
 
-    def set_word_group():
-        current_words = exp.get_current_words()
-        exp.new_group()
-        for word_index, button in enumerate(words):
-            button.content.value = current_words[word_index]
-
     def show_plus():
         container.controls = [
             ft.Icon(
@@ -65,8 +59,13 @@ def WordExperimentView(page: ft.Page, state: AppState):
         ]
         page.update()
 
-    def show_word_group():
-        set_word_group()
+    async def show_word_group():
+
+        current_words = exp.get_current_words()
+
+        for word_index, button in enumerate(words):
+            button.content.value = current_words[word_index]
+
         container.controls = [words_grid]
         page.update()
         playsound("src/experiments/wordExperiment/res/sounds/" + exp.get_current_sound())
@@ -87,7 +86,7 @@ def WordExperimentView(page: ft.Page, state: AppState):
         if not process_state["process_started"]:
             process_state["process_started"] = True
         await exp.start()
-        show_word_group()
+        await show_word_group()
 
     def stop_experiment():
         exp.stop()

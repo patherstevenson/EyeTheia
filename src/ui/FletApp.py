@@ -3,7 +3,7 @@ from GazeManager import GazeManager
 from experiments.wordExperiment.WordGroup import WordGroup
 from ui.AppSettings import WordExperimentSettings
 from ui.AppState import AppState
-from ui.views.MainMenu import MainMenuView
+from ui.views.MainMenuFlet import MainMenuView
 from ui.views.WordExperimentFlet import WordExperimentView
 
 
@@ -36,14 +36,13 @@ async def main(page: ft.Page):
 
             case "/WordExperiment":
                 page.views.append(WordExperimentView(page, state))
+            case "/Results":
+                page.views.append(WordExperimentView(page, state))
 
         page.update()
 
     page.on_route_change = route_change
 
-
     page.views.append(MainMenuView(page, state))
 
     await page.push_route("/")
-
-    
