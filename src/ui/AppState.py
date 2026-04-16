@@ -11,7 +11,7 @@ class AppState:
     gaze_manager: GazeManager
     settings: WordExperimentSettings
     word_groups: list[WordGroup] = field(default_factory=list)
-    results: dict[int, GroupResults] = field(default_factory=dict)
+    results: list[GroupResults] = field(default_factory=list)
 
     def set_word_groups(self, new_word_groups: list[WordGroup]):
         self.word_groups.clear()

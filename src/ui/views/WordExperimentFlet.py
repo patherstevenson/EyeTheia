@@ -94,10 +94,10 @@ def WordExperimentView(page: ft.Page, state: AppState):
         process_state["process_started"] = False
         page.update()
 
-        for res in exp.results.values():
+        for res in exp.results:
             print(str(res))
 
-        page.run_task(back_to_main_menu, page)
+        page.run_task(page.push_route, "/Results")
 
     exp.add_finish_listener(stop_experiment)
 

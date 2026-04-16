@@ -4,6 +4,7 @@ from experiments.wordExperiment.WordGroup import WordGroup
 from ui.AppSettings import WordExperimentSettings
 from ui.AppState import AppState
 from ui.views.MainMenuFlet import MainMenuView
+from ui.views.ResultsScreenFlet import ResultScreenView
 from ui.views.WordExperimentFlet import WordExperimentView
 
 
@@ -37,7 +38,7 @@ async def main(page: ft.Page):
             case "/WordExperiment":
                 page.views.append(WordExperimentView(page, state))
             case "/Results":
-                page.views.append(WordExperimentView(page, state))
+                page.views.append(ResultScreenView(page, state))
 
         page.update()
 

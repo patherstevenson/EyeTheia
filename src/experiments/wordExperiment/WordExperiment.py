@@ -21,7 +21,7 @@ class WordExperiment:
         self.last_coords = None
         self._thread = None
         self._listeners = {}
-        self.results: dict[GroupResults] = {}
+        self.results: list[GroupResults] = state.results
         self.state: AppState = state
         self.last_group_date = time.time()
 
@@ -104,6 +104,7 @@ class WordExperiment:
 
     async def set_word_group(self):
         await self._listeners["show_word_group"]()
+        self.results.append(GroupResults(self.actual_index, self.get_current_group().words))
         self.results[self.actual_index] = GroupResults(self.actual_index, self.get_current_group().words)
 
     async def choose(self, index):
