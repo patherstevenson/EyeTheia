@@ -61,6 +61,10 @@ def MainMenuView(page: ft.Page, state: AppState):
             on_click=lambda _: page.run_task(loadCSV, "src/experiments/wordExperiment/res/WordData.csv", state)
         ),
         ft.Button(
+            content="FastResults",
+            on_click=lambda _: page.run_task(page.push_route, "/Results")
+        ),
+        ft.Button(
             content="Settings",
             on_click=onSettings
         ),
