@@ -46,4 +46,4 @@ async def main(page: ft.Page):
 
     page.views.append(MainMenuView(page, state))
 
-    await page.push_route("/Results")
+    await page.push_route("/")
