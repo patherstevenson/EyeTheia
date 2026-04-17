@@ -16,7 +16,7 @@ class GroupResults:
         self.index: int = index
         self.words: WordGroup = words
         self.selected: int = selected
-        self.gaze_score: list[int] = [0,0,0,0]
+        self.gaze_score: list[int] = [0,0,0,0,0]
 
     def get_selected_word(self):
         """Return directly the selected word, not just his index in the group."""

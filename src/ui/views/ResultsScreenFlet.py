@@ -5,13 +5,14 @@ from experiments.wordExperiment.WordGroup import WordGroup
 from flet import controls
 from flet.controls import alignment, border
 from flet.controls.core import icon
+from playsound3 import playsound
 from scipy.cluster.hierarchy import weighted
 from torch.nn.modules import container
 
 from ui.AppState import AppState
 
 
-def tabWidget(data, size, font: ft.FontWeight, spacing, border_width, border_color):
+def tabWidget(data, size, font: ft.FontWeight, spacing, border_width, border_color, is_score: bool = False):
     words = []
     for o in data:
         words.append(str(o))
@@ -34,16 +35,15 @@ def tabWidget(data, size, font: ft.FontWeight, spacing, border_width, border_col
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             spacing=spacing,
+            data=is_score
         ),
         border=ft.Border.all(border_width, border_color),
         expand=1,
-        aspect_ratio=1
+        aspect_ratio=1,
     )
 
 
 def data_widget(res):
-    score_tab_widget = tabWidget(res.gaze_score, 12, ft.FontWeight.W_600, 8, 4, ft.Colors.GREY)
-    score_tab_widget.expand = False
 
     # Data
     return ft.Column(
@@ -51,11 +51,12 @@ def data_widget(res):
             ft.Container(
                 content=ft.Row(
                     controls=[
-                        ft.Text("Sound.mp3", size=20, weight=ft.FontWeight.W_600),
-                        ft.Icon(
+                        ft.Text(res.words.sound, size=20, weight=ft.FontWeight.W_600),
+                        ft.IconButton(
                             icon=ft.Icons.PLAY_ARROW,
-                            color=ft.Colors.BLUE,
-                            size=40
+                            icon_color=ft.Colors.BLUE,
+                            icon_size=40,
+                            on_click=lambda _: playsound("src/experiments/wordExperiment/res/sounds/" + res.words.sound)
                         )
                     ],
                     alignment=ft.MainAxisAlignment.CENTER,
@@ -67,10 +68,10 @@ def data_widget(res):
             ,
             ft.Row(
                 controls=[
-                    score_tab_widget,
+                    tabWidget(res.gaze_score, 18, ft.FontWeight.W_600, 8, 4, ft.Colors.GREY),
                     ft.Column(
                         controls=[
-                            ft.Text("102 Gaze Out", size=14, weight=ft.FontWeight.W_600, overflow=ft.TextOverflow.FADE),
+                            ft.Text(str(res.gaze_score[4]) +  " gazes failed", size=14, weight=ft.FontWeight.W_600, overflow=ft.TextOverflow.FADE),
                             ft.Divider(height=9, thickness=3),
                             ft.Text("Je sais pas quelle info mettre ici", size=14, weight=ft.FontWeight.W_600,
                                     overflow=ft.TextOverflow.FADE),
@@ -81,7 +82,7 @@ def data_widget(res):
 
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
-                expand=3
+                expand=1
             )
         ],
         expand=1,
@@ -89,10 +90,26 @@ def data_widget(res):
     )
 
 
-def res_widget(res):
+def switch_infos(word_tab_widget, res: GroupResults, page):
+    if (word_tab_widget.content.data):
+        word_tab_widget.content = tabWidget(res.words.words, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.GREY,
+                                            False).content
+        page.update()
+    else:
+        word_tab_widget.content = tabWidget(res.gaze_score, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.GREY,
+                                            True).content
+        page.update()
+
+    word_tab_widget.on_click = lambda _: switch_infos(word_tab_widget, res, page)
+
+
+def res_widget(page, res):
     word_tab_widget = tabWidget(res.words.words, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.GREY)
 
     word_tab_widget.aspect_ratio = 1
+    word_tab_widget.ink = True
+
+    word_tab_widget.on_click = lambda _: switch_infos(word_tab_widget, res, page)
 
     res_data_widget = data_widget(res)
 
@@ -123,18 +140,17 @@ def ResultScreenView(page: ft.Page, state: AppState):
             GroupResults(4, WordGroup(["beine", "feutre", "peine", "permis"], "beine", "pronunciation_fr_beine.mp3"),
                          1),
             GroupResults(5, WordGroup(["boule", "rond", "poule", "trait"], "boule", "pronunciation_fr_boule.mp3"), 2),
-            GroupResults(5, WordGroup(["boule", "rond", "poule", "trait"], "boule", "pronunciation_fr_boule.mp3"), 2),
 
         ]
-        state.results[0].gaze_score = [1, 5, 2, 7]
-        state.results[1].gaze_score = [1, 0, 4, 19]
-        state.results[2].gaze_score = [7, 2, 18, 7]
-        state.results[3].gaze_score = [1, 9, 4, 7]
-        state.results[4].gaze_score = [6, 2, 24, 6]
-        state.results[5].gaze_score = [14, 2, 4, 0]
+        state.results[0].gaze_score = [1, 5, 2, 7, 3]
+        state.results[1].gaze_score = [1, 0, 4, 19, 20]
+        state.results[2].gaze_score = [7, 2, 18, 7, 0]
+        state.results[3].gaze_score = [1, 9, 4, 7, 0]
+        state.results[4].gaze_score = [6, 2, 24, 6, 14]
+        state.results[5].gaze_score = [14, 2, 4, 0, 7]
 
     widget_list = [
-        res_widget(res)
+        res_widget(page, res)
         for res in state.results
     ]
 
