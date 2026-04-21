@@ -16,13 +16,17 @@ class GroupResults:
         self.index: int = index
         self.words: WordGroup = words
         self.selected: int = selected
-        self.gaze_score: list[int] = [0,0,0,0,0]
+        self.gaze_score: list[int] = [0, 0, 0, 0, 0]
         self.gaze_points: list[GazePoint] = []
 
     def get_selected_word(self):
         """Return directly the selected word, not just his index in the group."""
         return self.words.words[self.selected]
 
-
     def __str__(self):
-        return str(self.index) + " : " + str(self.words.words) + " | " + self.get_selected_word() + " | " + str(self.gaze_score)
+        # return str(self.index) + " : " + str(self.words.words) + " | " + self.get_selected_word() + " | " + str(self.gaze_score) + "\n" + str(self.gaze_points)
+        result = "["
+        for pt in self.gaze_points:
+            result = result + str(pt)
+
+        return f"state.results[1].gaze_score = {result}]\n\n"
