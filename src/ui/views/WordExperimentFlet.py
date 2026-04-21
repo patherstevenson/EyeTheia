@@ -28,7 +28,7 @@ def WordExperimentView(page: ft.Page, state: AppState):
             content=ft.Text(word),
             width=quarter_width,
             height=quarter_height,
-            on_click=lambda _, i=index: page.run_task(exp.choose, i)
+            on_click=lambda _, i=index: page.run_task(exp.next_words, i)
         )
         for index, word in enumerate(exp.get_current_words())
     ]
@@ -86,7 +86,6 @@ def WordExperimentView(page: ft.Page, state: AppState):
         if not process_state["process_started"]:
             process_state["process_started"] = True
         await exp.start()
-        await show_word_group()
 
     def stop_experiment():
         exp.stop()
@@ -94,7 +93,7 @@ def WordExperimentView(page: ft.Page, state: AppState):
         process_state["process_started"] = False
         page.update()
 
-        for res in exp.results:
+        for res in state.results:
             print(str(res))
 
         page.run_task(page.push_route, "/Results")

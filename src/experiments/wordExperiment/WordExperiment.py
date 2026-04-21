@@ -6,6 +6,7 @@ import mediapipe as mp
 import asyncio
 
 from experiments.wordExperiment import WordGroup
+from experiments.wordExperiment.GazePoint import GazePoint
 from experiments.wordExperiment.GroupResults import GroupResults
 from ui import AppState
 from utils.config import SCREEN_WIDTH, SCREEN_HEIGHT
@@ -21,7 +22,6 @@ class WordExperiment:
         self.last_coords = None
         self._thread = None
         self._listeners = {}
-        self.results: list[GroupResults] = state.results
         self.state: AppState = state
         self.last_group_date = time.time()
 
@@ -35,7 +35,9 @@ class WordExperiment:
 
         self.actual_index = 0
 
-        await self.set_word_group()
+        self.state.results = []
+
+        await self.next_words()
 
     def add_finish_listener(self, finish_listener):
         self._listeners["finish"] = finish_listener
@@ -53,11 +55,13 @@ class WordExperiment:
                 self.last_coords = (cx, cy)
                 self._listeners["coords"](cx, cy)
 
-                if len(self.results) > self.actual_index is not None:
-                    self.results[self.actual_index].gaze_score[self.get_button_index()] += 1
+                if len(self.state.results) > 0:
+                    self.state.results[-1].gaze_score[self.get_button_index()] += 1
+
+                    self.state.results[-1].gaze_points.append(GazePoint(len(self.state.results[-1].gaze_points), cx, cy))
 
                 if (time.time() - self.last_group_date >= self.state.settings.max_time_to_choose):
-                    await self.choose(-1)
+                    await self.next_words()
 
     def get_button_index(self):
         """Return button index based on where the patient is looking
@@ -74,48 +78,49 @@ class WordExperiment:
 
             return result
 
-    def has_current_group(self):
-        return self.actual_index < len(self.word_groups)
-
-    def get_current_group(self) -> WordGroup:
-        if not self.has_current_group():
-            return None
-        return self.word_groups[self.actual_index]
-
     def get_current_words(self):
-        current_group = self.get_current_group()
-        if current_group is None:
+        """Return actual words"""
+        words = self.word_groups[len(self.state.results) - 1].words
+        if words is not None :
+            return words
+        else:
             return []
-        return current_group.words
+
 
     def get_current_sound(self):
-        current_group = self.get_current_group()
-        if current_group is None:
-            return ""
-        return current_group.sound
+        """Return actual words"""
+        words = self.word_groups[len(self.state.results) - 1].sound
+        if words is not None :
+            return words
+        else:
+            return []
 
-    def is_finished(self):
-        return not self.has_current_group()
 
-    async def new_group(self):
-        self.actual_index += 1
+    async def next_words(self, choosen = -1):
+        """Show the next word group, and process result if given
+        :param choosen : Chosen word in the previous group. If no word was clicked, chosen == -1. If first group, chosen == -2
+        """
 
-        await self.set_word_group()
+        if(choosen >= 0):
+            # Any result given (no auto-skip or first group)
+            self.state.results[-1].selected = choosen
 
-    async def set_word_group(self):
-        await self._listeners["show_word_group"]()
-        self.results.append(GroupResults(self.actual_index, self.get_current_group()))
-        self.results[self.actual_index] = GroupResults(self.actual_index, self.get_current_group())
+        if(len(self.word_groups) > len(self.state.results)):
+            # Show next group
+            new_index = len(self.state.results)
 
-    async def choose(self, index):
-
-        self.results[self.actual_index].selected = index
-
-        if (self.actual_index < len(self.word_groups) - 1):
             self._listeners["show_plus"]()
             await asyncio.sleep(self.state.settings.time_to_wait_between)
+
+
+            new_word_group = self.word_groups[new_index]
+            self.state.results.append(GroupResults(new_word_group, new_word_group))
+
+
+            await self._listeners["show_word_group"]()
             self.last_group_date = time.time()
-            await self.new_group()
+
 
         else:
             self._listeners["finish"]()
+
