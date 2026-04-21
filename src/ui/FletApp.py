@@ -1,6 +1,7 @@
 import flet as ft
 from GazeManager import GazeManager
 from experiments.wordExperiment.WordGroup import WordGroup
+from flet import controls
 from ui.AppSettings import WordExperimentSettings
 from ui.AppState import AppState
 from ui.views.MainMenuFlet import MainMenuView
@@ -39,6 +40,12 @@ async def main(page: ft.Page):
                 page.views.append(WordExperimentView(page, state))
             case "/Results":
                 page.views.append(ResultScreenView(page, state))
+            case "/Personalize":
+                page.views.append(ft.View(controls=ft.Column(controls=[
+                    ft.Text("WIP"), ft.Button(content="Go Back",
+                                              on_click=lambda _: page.run_task(page.push_route, "/"))], ),
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER))
 
         page.update()
 

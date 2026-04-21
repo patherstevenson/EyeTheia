@@ -1,5 +1,6 @@
 import asyncio
 
+from flet.controls import alignment
 from playsound3 import playsound
 import flet as ft
 from experiments.wordExperiment.WordExperiment import WordExperiment
@@ -8,8 +9,6 @@ from ui.AppState import AppState
 
 def WordExperimentView(page: ft.Page, state: AppState):
     exp = WordExperiment(state)
-
-
 
     cx_text = ft.Text("cx: -")
     cy_text = ft.Text("cy: -")
@@ -104,8 +103,20 @@ def WordExperimentView(page: ft.Page, state: AppState):
         await page.push_route("/")
 
     container.controls = [
-        ft.Row(
+        ft.Column(
             controls=[
+                ft.Text("Before Starting : ", weight= ft.FontWeight.W_900),
+                ft.Row(
+                    controls=[
+                        ft.Button(
+                            content="Calibration", on_click=state.gaze_manager.calibrate
+                        ),
+                        ft.Button(
+                            content="Personalize Experiment",
+                            on_click=lambda _: page.run_task(page.push_route, "/Personalize")
+                        )],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                ),
                 ft.Button(
                     content="Démarrer l'expérience",
                     on_click=start_experiment,
@@ -114,7 +125,9 @@ def WordExperimentView(page: ft.Page, state: AppState):
                     content="MainMenu",
                     on_click=lambda _: page.run_task(back_to_main_menu, page)
                 ),
-            ]
+            ],
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         ),
     ]
 
