@@ -5,15 +5,15 @@ from ui.AppState import AppState
 
 
 
-@ft.control
-class WordPicker(ft.Row):
-    """A widget to arrange 4 words in a grid"""
-    words= list[str] = field(default_factory=list)
-
-    def init(self):
-        self.controls=[
-
-        ]
+# @ft.control
+# class WordPicker(ft.Row):
+#     """A widget to arrange 4 words in a grid"""
+#     words= list[str] = field(default_factory=list)
+#
+#     def init(self):
+#         self.controls=[
+#
+#         ]
 
 @ft.control
 class GroupCustomization(ft.Row):

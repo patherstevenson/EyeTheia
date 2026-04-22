@@ -61,3 +61,4 @@ async def main(page: ft.Page):
     page.on_route_change = route_change
 
     page.views.append(MainMenuView(page, state))
+
