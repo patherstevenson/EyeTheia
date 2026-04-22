@@ -5,16 +5,13 @@ from experiments.wordExperiment.WordGroup import WordGroup
 from ui.AppState import AppState
 
 
-def onCalibration():
-    print("Calibration")
-
-
 async def onWordExperiment(page: ft.Page):
+    """Show WordExperiment View"""
     await page.push_route("/WordExperiment")
 
 
 async def onLoadCSV(state: AppState):
-    print("Load CSV")
+    """Call a File Picker, and take a default one if you close the File Picker too soon"""
     file_path = await ft.FilePicker().pick_files(allow_multiple=False)
 
     if not file_path:
@@ -26,6 +23,7 @@ async def onLoadCSV(state: AppState):
 
 
 async def loadCSV(file_path, state):
+    """Load the specified CSV in state.word_groups"""
     with open(file_path, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         wordData = []
@@ -35,7 +33,6 @@ async def loadCSV(file_path, state):
             wordData.append(WordGroup(row[:4], row[4], row[5]))
 
         state.set_word_groups(wordData)
-        print(str(len(wordData)))
 
 
 def onSettings():
@@ -65,12 +62,8 @@ def MainMenuView(page: ft.Page, state: AppState):
             on_click=lambda _: page.run_task(page.push_route, "/Results")
         ),
         ft.Button(
-            content="Settings",
-            on_click=onSettings
-        ),
-        ft.Button(
-            content="CanvaTest",
-            on_click=lambda _: page.run_task(page.push_route, "/CanvaTest")
+            content="Personalize",
+            on_click=lambda _: page.run_task(page.push_route, "/Personalize")
         ),
     ]
     column = ft.Column(

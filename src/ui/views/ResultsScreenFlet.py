@@ -135,13 +135,14 @@ def res_widget(page, res):
         margin=ft.Margin.symmetric(horizontal=20)
     )
 
-canva_width = SCREEN_WIDTH
-canva_height = SCREEN_HEIGHT
+
+canva_width = 0
+canva_height = 0
 
 canvas = []
 
-def points_canva(page, res):
 
+def points_canva(page, res):
     canva = cv.Canvas(
         # data=True,
         # width=200,
@@ -151,8 +152,6 @@ def points_canva(page, res):
     )
 
     canvas.append(canva)
-
-
 
     return ft.Container(content=canva,
                         border=ft.Border.all(6, ft.Colors.GREY),
@@ -165,9 +164,7 @@ def handle_resize(e):
     canva_width: float = e.width
     canva_height: float = e.height
 
-
     (res, page) = e.control.data
-
 
     stroke_paint = ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE)
     shapes = []
@@ -188,16 +185,9 @@ def handle_resize(e):
         old_x = x
         old_y = y
 
-
-    e.control.shapes=shapes
+    e.control.shapes = shapes
 
     page.update()
-
-
-
-
-
-
 
 
 def ResultScreenView(page: ft.Page, state: AppState):
