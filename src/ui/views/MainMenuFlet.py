@@ -46,7 +46,7 @@ def MainMenuView(page: ft.Page, state: AppState):
             on_click=state.gaze_manager.calibrate
         ),
         ft.Button(
-            content="WordTest",
+            content="Word Experience",
             on_click=lambda _: page.run_task(onWordExperiment, page)
         ),
         ft.Button(
@@ -64,6 +64,10 @@ def MainMenuView(page: ft.Page, state: AppState):
         ft.Button(
             content="Personalize",
             on_click=lambda _: page.run_task(page.push_route, "/Personalize")
+        ),
+        ft.Button(
+            content="DraggableTest",
+            on_click=lambda _: page.run_task(page.push_route, "/DragTest")
         ),
     ]
     column = ft.Column(

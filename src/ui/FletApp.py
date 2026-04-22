@@ -3,6 +3,7 @@ from GazeManager import GazeManager
 from experiments.wordExperiment.WordGroup import WordGroup
 from ui.AppSettings import WordExperimentSettings
 from ui.AppState import AppState
+from ui.views.DraggableTestView import DraggableTestView
 from ui.views.MainMenuFlet import MainMenuView
 from ui.views.PersonalizeFlet import PersonalizeView
 from ui.views.ResultsScreenFlet import ResultScreenView
@@ -46,6 +47,8 @@ async def main(page: ft.Page):
             case "/Personalize":
                 print("autre test")
                 page.views.append(PersonalizeView(page, state))
+            case "/DragTest":
+                page.views.append(DraggableTestView(page, state))
             case _:
                 page.views.append(ft.View(controls=ft.Column(controls=[
                     ft.Text("No page found"), ft.Button(content="Go Back to Main Menu",
