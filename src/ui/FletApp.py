@@ -7,6 +7,7 @@ from ui.AppState import AppState
 from ui.views.MainMenuFlet import MainMenuView
 from ui.views.ResultsScreenFlet import ResultScreenView
 from ui.views.WordExperimentFlet import WordExperimentView
+from ui.views.CanvaTestFlet import CanvaTestView
 
 
 async def main(page: ft.Page):
@@ -40,6 +41,8 @@ async def main(page: ft.Page):
                 page.views.append(WordExperimentView(page, state))
             case "/Results":
                 page.views.append(ResultScreenView(page, state))
+            case "/CanvaTest":
+                page.views.append(CanvaTestView(page, state))
             case "/Personalize":
                 page.views.append(ft.View(controls=ft.Column(controls=[
                     ft.Text("WIP"), ft.Button(content="Go Back",

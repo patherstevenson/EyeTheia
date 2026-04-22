@@ -103,7 +103,6 @@ def switch_infos(word_tab_widget, res: GroupResults, page):
         #                                     True).content
         word_tab_widget.content = points_canva(page, res)
         page.update()
-        print("ouais")
 
     word_tab_widget.on_click = lambda _: switch_infos(word_tab_widget, res, page)
 
@@ -128,7 +127,7 @@ def res_widget(page, res):
                 res_data_widget
             ],
             alignment=ft.MainAxisAlignment.CENTER,
-            vertical_alignment=ft.CrossAxisAlignment.CENTER, expand=True,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER, expand_loose=True,
             spacing=50,
         ),
         border=ft.Border.all(10, ft.Colors.AMBER_100),
@@ -136,36 +135,69 @@ def res_widget(page, res):
         margin=ft.Margin.symmetric(horizontal=20)
     )
 
+canva_width = SCREEN_WIDTH
+canva_height = SCREEN_HEIGHT
+
+canvas = []
 
 def points_canva(page, res):
-    stroke_paint = ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE)
-    shapes = []
-
-    old_x = -1
-    old_y = -1
-
-    for pt in res.gaze_points:
-        shapes.append(cv.Circle(x=pt.x, y=pt.y, radius=10, paint=stroke_paint))
-        shapes.append(
-            cv.Text(x=pt.x, y=pt.y, value=str(pt.index), style=ft.TextStyle(size=10), alignment=ft.Alignment.CENTER, ))
-        if (old_x >= 0 & old_y >= 0):
-            shapes.append(cv.Line(paint=stroke_paint, x1=old_x, y1=old_y, x2=pt.x, y2=pt.y))
-        old_x = pt.x
-        old_y = pt.y
 
     canva = cv.Canvas(
-        width=SCREEN_WIDTH,
-        height=SCREEN_HEIGHT,
-        data=True,
-        expand=True,
-        shapes=shapes
+        # data=True,
+        # width=200,
+        # height=200,
+        on_resize=handle_resize,
+        data=(res, page)
     )
+
+    canvas.append(canva)
+
+
 
     return ft.Container(content=canva,
                         border=ft.Border.all(6, ft.Colors.GREY),
                         expand=1,
                         aspect_ratio=1,
                         data=True)
+
+
+def handle_resize(e):
+    canva_width: float = e.width
+    canva_height: float = e.height
+
+
+    (res, page) = e.control.data
+
+
+    stroke_paint = ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE)
+    shapes = []
+
+    old_x = -1
+    old_y = -1
+
+    style = ft.TextStyle(size=10)
+
+    for pt in res.gaze_points:
+
+        x = round((pt.x / SCREEN_WIDTH) * canva_width)
+        y = round((pt.y / SCREEN_HEIGHT) * canva_height)
+        shapes.append(cv.Circle(x=x, y=y, radius=10, paint=stroke_paint))
+        shapes.append(cv.Text(x=x, y=y, value=str(pt.index), style=style, alignment=ft.Alignment.CENTER))
+        if (old_x >= 0 & old_y >= 0):
+            shapes.append(cv.Line(paint=stroke_paint, x1=old_x, y1=old_y, x2=x, y2=y))
+        old_x = x
+        old_y = y
+
+
+    e.control.shapes=shapes
+
+    page.update()
+
+
+
+
+
+
 
 
 def ResultScreenView(page: ft.Page, state: AppState):

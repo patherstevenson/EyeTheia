@@ -68,10 +68,15 @@ def MainMenuView(page: ft.Page, state: AppState):
             content="Settings",
             on_click=onSettings
         ),
+        ft.Button(
+            content="CanvaTest",
+            on_click=lambda _: page.run_task(page.push_route, "/CanvaTest")
+        ),
     ]
     column = ft.Column(
         controls=buttons,
         alignment=ft.Alignment.CENTER,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         spacing=20
     )
 
