@@ -4,7 +4,6 @@ import flet as ft
 from ui.AppState import AppState
 
 
-
 # @ft.control
 # class WordPicker(ft.Row):
 #     """A widget to arrange 4 words in a grid"""
@@ -57,13 +56,14 @@ def PersonalizeView(page: ft.Page, state: AppState):
         for i in range(20)
     ]
 
-    widgets.append(ft.ReorderableListView(
-        controls=group_list,
-        expand=1,
-        auto_scroll=True,
-        height=page.height - 100,
-        on_reorder=handle_reorder
-    )
+    widgets.append(
+        ft.ReorderableListView(
+            controls=group_list,
+            expand=1,
+            auto_scroll=True,
+            height=page.height - 100,
+            on_reorder=handle_reorder
+        )
     )
 
     widgets.append(ft.VerticalDivider())
@@ -71,12 +71,12 @@ def PersonalizeView(page: ft.Page, state: AppState):
     widgets.append(ft.Column(
         controls=[
             ft.Button(content="Go Back to Main Menu",
-                      on_click=lambda _: page.run_task(page.push_route, "/WordExperiment"))
+                      on_click=lambda _: page.run_task(page.push_route, "/WordExperiment")
+                      )
         ],
         expand=1
     ))
 
-    print("test")
 
     return ft.View(
         controls=ft.Row(controls=widgets, expand=True),

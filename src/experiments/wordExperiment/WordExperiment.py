@@ -109,12 +109,14 @@ class WordExperiment:
             # Show next group
             new_index = len(self.state.results)
 
+            total_time = time.time() - self.last_group_date
+
             self._listeners["show_plus"]()
             await asyncio.sleep(self.state.settings.time_to_wait_between)
 
 
             new_word_group = self.word_groups[new_index]
-            self.state.results.append(GroupResults(new_word_group, new_word_group))
+            self.state.results.append(GroupResults(new_word_group, new_word_group,choosen, total_time))
 
 
             await self._listeners["show_word_group"]()

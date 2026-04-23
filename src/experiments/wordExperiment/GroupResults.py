@@ -6,7 +6,7 @@ class GroupResults:
     Represent the result of a Group of Words
     """
 
-    def __init__(self, index: int, words: WordGroup, selected: int = - 1):
+    def __init__(self, index: int, words: WordGroup, selected: int = - 1, total_time: int = 0):
         """
         Init a GroupResult
         :param index: the index of the group in the whole dataset
@@ -18,6 +18,7 @@ class GroupResults:
         self.selected: int = selected
         self.gaze_score: list[int] = [0, 0, 0, 0, 0]
         self.gaze_points: list[GazePoint] = []
+        self.total_time: int = total_time
 
     def get_selected_word(self):
         """Return directly the selected word, not just his index in the group."""

@@ -45,7 +45,6 @@ async def main(page: ft.Page):
             case "/Results":
                 page.views.append(ResultScreenView(page, state))
             case "/Personalize":
-                print("autre test")
                 page.views.append(PersonalizeView(page, state))
             case "/DragTest":
                 page.views.append(DraggableTestView(page, state))

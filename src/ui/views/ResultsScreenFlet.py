@@ -380,9 +380,7 @@ def ResultScreenView(page: ft.Page, state: AppState):
 
 async def saveToCSV(results: list[GroupResults]):
     fp = ft.FilePicker()
-    file_path = await fp.save_file(dialog_title="Save File", file_name="word_experiment_results", file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=[".csv"])
-
-    print(file_path)
+    file_path = await fp.save_file(dialog_title="Save File", file_name="word_experiment_results.csv", file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=[".csv"])
 
     with(open(file_path, 'w', newline='')) as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
@@ -393,6 +391,6 @@ async def saveToCSV(results: list[GroupResults]):
             for pt in res.gaze_points:
                 points += str(pt) + ";"
 
-            writer.writerow(res.words.words + [res.words.correct,res.selected, points])
+            writer.writerow(res.words.words + [res.words.correct,res.selected, str(res.total_time), points])
 
 
