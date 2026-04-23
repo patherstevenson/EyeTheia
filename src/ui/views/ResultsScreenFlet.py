@@ -1,16 +1,12 @@
+import csv
+import time
+
 import flet as ft
 import flet.canvas as cv
-from PIL.ImageOps import expand
 from experiments.wordExperiment.GazePoint import GazePoint
 from experiments.wordExperiment.GroupResults import GroupResults
 from experiments.wordExperiment.WordGroup import WordGroup
-from flet import controls
-from flet.controls import alignment, border
-from flet.controls.core import icon
 from playsound3 import playsound
-from scipy.cluster.hierarchy import weighted
-from torch.nn.modules import container
-
 from ui.AppState import AppState
 from utils.config import SCREEN_HEIGHT, SCREEN_WIDTH
 
@@ -364,11 +360,39 @@ def ResultScreenView(page: ft.Page, state: AppState):
             ),
                 auto_scroll=True,
                 height=page.height - 100, ),
-            ft.Button(
-                content="Go Back To Main Menu",
-                on_click=lambda _: page.run_task(page.push_route, ("/"))
-            )],
+            ft.Row(controls=[
+                ft.Button(
+                    content="Go Back To Main Menu",
+                    on_click=lambda _: page.run_task(page.push_route, ("/"))
+                ),
+                ft.Button(
+                    content="Save to CSV",
+                    on_click=lambda _: page.run_task(saveToCSV, state.results)
+                ),
+
+            ]),
+        ],
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
         # scroll=ft.ScrollMode.AUTO
     )
+
+
+async def saveToCSV(results: list[GroupResults]):
+    fp = ft.FilePicker()
+    file_path = await fp.save_file(dialog_title="Save File", file_name="word_experiment_results", file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=[".csv"])
+
+    print(file_path)
+
+    with(open(file_path, 'w', newline='')) as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+
+        for res in results:
+            points = ""
+
+            for pt in res.gaze_points:
+                points += str(pt) + ";"
+
+            writer.writerow(res.words.words + [res.words.correct,res.selected, points])
+
+
