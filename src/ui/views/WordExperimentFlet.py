@@ -1,14 +1,12 @@
 import asyncio
+import csv
 
+import flet as ft
+from experiments.wordExperiment.WordExperiment import WordExperiment
 from experiments.wordExperiment.WordGroup import WordGroup
 from flet.controls import alignment
 from playsound3 import playsound
-import flet as ft
-from experiments.wordExperiment.WordExperiment import WordExperiment
-
 from ui.AppState import AppState
-import csv
-
 
 
 async def onLoadCSV(state: AppState):
@@ -36,14 +34,13 @@ async def loadCSV(file_path, state):
         state.set_word_groups(wordData)
 
 
-
 def WordExperimentView(page: ft.Page, state: AppState):
     exp = WordExperiment(state)
 
     cx_text = ft.Text("cx: -")
     cy_text = ft.Text("cy: -")
-    quarter_width = max((page.window.width or 1200) / 2 - 24, 200) * state.settings.buttons_size
-    quarter_height = max((page.window.height or 800) / 2 - 24, 140) * state.settings.buttons_size
+    quarter_width = max((page.window.width or 1920) / 2, 200) * state.settings.buttons_size
+    quarter_height = max((page.window.height or 1080) / 2, 140) * state.settings.buttons_size
 
     container = ft.Column(
         controls=[],
@@ -53,29 +50,37 @@ def WordExperimentView(page: ft.Page, state: AppState):
     )
 
     words = [
-        ft.Button(
-            content=ft.Text(word),
-            width=quarter_width,
-            height=quarter_height,
-            on_click=lambda _, i=index: page.run_task(exp.next_words, i)
+        ft.Container(
+            content=ft.Button(
+                content=ft.Text(word),
+                width=quarter_width,
+                height=quarter_height,
+                on_click=lambda _, i=index: page.run_task(exp.next_words, i)
+            ),
+            expand=1,
+            alignment=ft.Alignment.CENTER,
         )
-        for index, word in enumerate(exp.get_current_words())
+        for index, word in enumerate(exp.word_groups[0].words)
     ]
-
     words_grid = ft.Column(
         controls=[
             ft.Row(
                 controls=words[:2],
                 alignment=ft.MainAxisAlignment.CENTER,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                expand=True
             ),
             ft.Row(
                 controls=words[2:4],
                 alignment=ft.MainAxisAlignment.CENTER,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                expand=True
             ),
         ],
         alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         spacing=16,
+        expand=True,
     )
 
     def show_plus():
@@ -93,7 +98,8 @@ def WordExperimentView(page: ft.Page, state: AppState):
         current_words = exp.get_current_words()
 
         for word_index, button in enumerate(words):
-            button.content.value = current_words[word_index]
+
+            button.content.content.value = current_words[word_index]
 
         container.controls = [words_grid]
         page.update()
@@ -135,7 +141,7 @@ def WordExperimentView(page: ft.Page, state: AppState):
     container.controls = [
         ft.Column(
             controls=[
-                ft.Text("Before Starting : ", weight= ft.FontWeight.W_900),
+                ft.Text("Before Starting : ", weight=ft.FontWeight.W_900),
                 ft.Row(
                     controls=[
                         ft.Button(
@@ -152,7 +158,7 @@ def WordExperimentView(page: ft.Page, state: AppState):
                         ft.Button(
                             content="FastCSV",
                             on_click=lambda _: page.run_task(loadCSV, "src/experiments/wordExperiment/res/WordData.csv", state)
-                        ),],
+                        ), ],
                     alignment=ft.MainAxisAlignment.CENTER,
                 ),
                 ft.Button(

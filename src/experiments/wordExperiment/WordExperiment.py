@@ -61,7 +61,6 @@ class WordExperiment:
 
                     self.state.results[-1].gaze_points.append(GazePoint(len(self.state.results[-1].gaze_points), cx, cy))
                     last_gaze = time.time()
-                    print(str(cx) + " " + str(cy))
 
                 if (time.time() - self.last_group_date >= self.state.settings.max_time_to_choose):
                     await self.next_words()

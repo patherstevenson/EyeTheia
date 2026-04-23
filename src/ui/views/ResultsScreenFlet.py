@@ -72,7 +72,7 @@ def data_widget(res):
                             ft.Text(str(res.gaze_score[4]) + " gazes failed", size=14, weight=ft.FontWeight.W_600,
                                     overflow=ft.TextOverflow.FADE),
                             ft.Divider(height=9, thickness=3),
-                            ft.Text("Je sais pas quelle info mettre ici", size=14, weight=ft.FontWeight.W_600,
+                            ft.Text(f"{round(res.total_time, 2)} seconds to choose", size=14, weight=ft.FontWeight.W_600,
                                     overflow=ft.TextOverflow.FADE),
                         ],
                         expand=True,
@@ -95,8 +95,6 @@ def switch_infos(word_tab_widget, res: GroupResults, page):
                                             False).content
         page.update()
     else:
-        # word_tab_widget.content = tabWidget(res.gaze_score, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.GREY,
-        #                                     True).content
         word_tab_widget.content = points_canva(page, res)
         page.update()
 
