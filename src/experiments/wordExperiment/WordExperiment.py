@@ -49,16 +49,19 @@ class WordExperiment:
         self.running = False
 
     async def _run_loop(self):
+        last_gaze = time.time()
         with mp.solutions.face_mesh.FaceMesh(refine_landmarks=True, max_num_faces=1) as face_mesh:
             while self.running:
                 cx, cy = self.gaze_manager.getGazeCoords(face_mesh)
                 self.last_coords = (cx, cy)
                 self._listeners["coords"](cx, cy)
 
-                if len(self.state.results) > 0:
+                if (len(self.state.results) > 0 ) & ((time.time() - last_gaze * 1.0)>= (1 / self.state.settings.gaze_per_second)):
                     self.state.results[-1].gaze_score[self.get_button_index()] += 1
 
                     self.state.results[-1].gaze_points.append(GazePoint(len(self.state.results[-1].gaze_points), cx, cy))
+                    last_gaze = time.time()
+                    print(str(cx) + " " + str(cy))
 
                 if (time.time() - self.last_group_date >= self.state.settings.max_time_to_choose):
                     await self.next_words()

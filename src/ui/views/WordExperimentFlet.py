@@ -1,9 +1,11 @@
 import asyncio
 
+from experiments.wordExperiment.WordGroup import WordGroup
 from flet.controls import alignment
 from playsound3 import playsound
 import flet as ft
 from experiments.wordExperiment.WordExperiment import WordExperiment
+
 from ui.AppState import AppState
 import csv
 
