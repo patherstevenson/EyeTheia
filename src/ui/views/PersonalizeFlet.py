@@ -9,7 +9,7 @@ class DragTile(ft.DragTarget):
     def __init__(self, group, word, index, on_swap):
         content = ft.Draggable(
             group=group,
-            content=ft.Container(content=ft.Text(word, weight=ft.FontWeight.W_400), width=100, height=100, border=ft.Border.all(2, ft.Colors.BLUE)),
+            content=ft.Container(content=ft.TextField(value=word), width=100, height=100, border=ft.Border.all(2, ft.Colors.BLUE)),
         )
         super().__init__(content)
         self.group = group
@@ -18,31 +18,33 @@ class DragTile(ft.DragTarget):
         self.data = index
         self.expand = True
 
+    def handleChange(self, e):
+        new_word = e.control.word
+
+
 
 @ft.control
 class WordPicker(ft.Column):
     """A widget to arrange 4 words in a grid"""
-    words = []
-    index = -1
+    words: list[str] = field(default_factory=list)
+    index: int = -1
 
-    def init(self, index=-1, words=["A", "B", "C", "D"]):
+    def init(self):
         self.expand = True
-        self.words = words
         self.build_grid()
-        self.index = index
 
     def build_grid(self):
         self.controls = [
             ft.Row(
                 controls=[
-                    DragTile(str(self.index), self.words[0], 1, self.handle_swap),
-                    DragTile(str(self.index), self.words[1], 2, self.handle_swap),
+                    DragTile(str(self.index), self.words[0], 0, self.handle_swap),
+                    DragTile(str(self.index), self.words[1], 1, self.handle_swap),
                 ], expand=True
             ),
             ft.Row(
                 controls=[
-                    DragTile(str(self.index), self.words[2], 3, self.handle_swap),
-                    DragTile(str(self.index), self.words[3], 4, self.handle_swap),
+                    DragTile(str(self.index), self.words[2], 2, self.handle_swap),
+                    DragTile(str(self.index), self.words[3], 3, self.handle_swap),
                 ], expand=True
             )
         ]
@@ -63,7 +65,7 @@ class WordPicker(ft.Column):
 
 
 @ft.control
-class GroupCustomization(ft.Row):
+class GroupCustomization(ft.Container):
     """A widget to configure a single WordGroup"""
     words: list[str] = field(default_factory=list)
     correct_answer: str = ""
@@ -71,12 +73,15 @@ class GroupCustomization(ft.Row):
     index: int = -1
 
     def init(self):
-        self.words = ["A", "B", "C", "D"]
-        self.controls = [
+        self.border = ft.Border.all(5, ft.Colors.BLACK_26)
+        # self.words = ["A", "B", "C", "D"]
+        self.content = ft.Row(controls=[
+
+
             ft.Checkbox(),
 
-            WordPicker(self.index, self.words)
-        ]
+            WordPicker(index = self.index, words = self.words)
+        ])
 
 
 def handle_reorder(e: ft.OnReorderEvent):
@@ -89,9 +94,11 @@ def handle_reorder(e: ft.OnReorderEvent):
 def PersonalizeView(page: ft.Page, state: AppState):
     widgets = []
 
+    word_groups = state.word_groups
+
     group_list = [
-        ft.Draggable(content=GroupCustomization(index=i), group="group")
-        for i in range(20)
+        ft.Draggable(content=GroupCustomization(index=i, words = group.words, correct_answer=group.correct, sound=group.sound,), group=str(i))
+        for i, group in enumerate(word_groups)
     ]
 
     widgets.append(
@@ -100,7 +107,8 @@ def PersonalizeView(page: ft.Page, state: AppState):
             expand=1,
             auto_scroll=True,
             height=page.height - 100,
-            on_reorder=handle_reorder
+            on_reorder=handle_reorder,
+            spacing=120
         )
     )
 
