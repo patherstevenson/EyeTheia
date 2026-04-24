@@ -9,7 +9,7 @@ class DragTile(ft.DragTarget):
     def __init__(self, group, word, index, on_swap):
         content = ft.Draggable(
             group=group,
-            content=ft.Container(content=ft.Text(word, weight=ft.FontWeight.W_400), width=100, height=100),
+            content=ft.Container(content=ft.Text(word, weight=ft.FontWeight.W_400), width=100, height=100, border=ft.Border.all(2, ft.Colors.BLUE)),
         )
         super().__init__(content)
         self.group = group
@@ -20,40 +20,46 @@ class DragTile(ft.DragTarget):
 
 
 @ft.control
-class WordPicker(ft.Row):
+class WordPicker(ft.Column):
     """A widget to arrange 4 words in a grid"""
-    words = list[str]
+    words = []
+    index = -1
 
-    def init(self, words=["A", "B", "C", "D"]):
-        self.build_grid()
+    def init(self, index=-1, words=["A", "B", "C", "D"]):
         self.expand = True
+        self.words = words
+        self.build_grid()
+        self.index = index
 
     def build_grid(self):
         self.controls = [
-            ft.Column(
+            ft.Row(
                 controls=[
-                    DragTile("1", "A", 1, self.handle_swap),
-                    DragTile("1", "B", 2, self.handle_swap),
+                    DragTile(str(self.index), self.words[0], 1, self.handle_swap),
+                    DragTile(str(self.index), self.words[1], 2, self.handle_swap),
                 ], expand=True
             ),
-            ft.Column(
+            ft.Row(
                 controls=[
-                    DragTile("1", "C", 3, self.handle_swap),
-                    DragTile("1", "D", 4, self.handle_swap),
+                    DragTile(str(self.index), self.words[2], 3, self.handle_swap),
+                    DragTile(str(self.index), self.words[3], 4, self.handle_swap),
                 ], expand=True
             )
         ]
 
     def handle_swap(self, e: ft.DragTargetEvent):
         print(str(e.src.parent.word))
-        # src_index = int(e.src.data)  # D'où ça vient
-        # dst_index = int(e.control.data)  # Où ça arrive
-        #
-        # self.words[src_index], self.words[dst_index] = self.words[dst_index], self.words[src_index]
-        #
-        # # On reconstruit la grille proprement
-        # self.build_grid()
-        # self.update()
+
+        print(self.words)
+
+        src_index = self.words.index(e.src.parent.word)
+        new_index = self.words.index(e.control.word)
+
+        self.words[src_index], self.words[new_index] = self.words[new_index], self.words[src_index]
+
+        # On reconstruit la grille proprement
+        self.build_grid()
+        self.update()
 
 
 @ft.control
@@ -62,26 +68,14 @@ class GroupCustomization(ft.Row):
     words: list[str] = field(default_factory=list)
     correct_answer: str = ""
     sound: str = ""
+    index: int = -1
 
     def init(self):
         self.words = ["A", "B", "C", "D"]
         self.controls = [
             ft.Checkbox(),
-            # ft.Column(
-            #     controls=[
-            #         ft.Text(self.words[0], weight=ft.FontWeight.W_600),
-            #         ft.Text(self.words[1], weight=ft.FontWeight.W_600),
-            #
-            #     ]
-            # ),
-            # ft.Column(
-            #     controls=[
-            #         ft.Text(self.words[2], weight=ft.FontWeight.W_600),
-            #         ft.Text(self.words[3], weight=ft.FontWeight.W_600),
-            #     ]
-            # ),
 
-            WordPicker(self.words)
+            WordPicker(self.index, self.words)
         ]
 
 
@@ -96,7 +90,7 @@ def PersonalizeView(page: ft.Page, state: AppState):
     widgets = []
 
     group_list = [
-        ft.Draggable(content=GroupCustomization(), group="group")
+        ft.Draggable(content=GroupCustomization(index=i), group="group")
         for i in range(20)
     ]
 
