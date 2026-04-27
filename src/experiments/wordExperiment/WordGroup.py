@@ -1,5 +1,7 @@
+from dataclasses import dataclass, field
+
+@dataclass
 class WordGroup:
-    def __init__(self, words = [], correct = "", sound = ""):
-        self.words = words
-        self.correct = correct
-        self.sound = sound
+    words: list[str] = field(default_factory=list)
+    correct: str = ""
+    sound: str = ""

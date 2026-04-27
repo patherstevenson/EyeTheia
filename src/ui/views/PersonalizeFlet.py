@@ -1,6 +1,7 @@
 from dataclasses import field
 
 import flet as ft
+from experiments.wordExperiment.WordGroup import WordGroup
 from ui.AppState import AppState
 
 
@@ -13,9 +14,7 @@ def PersonalizeView(page: ft.Page, state: AppState):
         ft.Draggable(
             content=GroupCustomization(
                 index=i,
-                words=group.words,
-                correct_answer=group.correct,
-                sound=group.sound
+                group=group
             ),
             group=str(i)
         )
@@ -56,23 +55,26 @@ def PersonalizeView(page: ft.Page, state: AppState):
         vertical_alignment=ft.CrossAxisAlignment.CENTER
     )
 
+
 @ft.control
 class GroupCustomization(ft.Container):
     """A widget to configure a single WordGroup"""
-    words: list[str] = field(default_factory=list)
-    correct_answer: str = ""
-    sound: str = ""
     index: int = -1
+    group: WordGroup = None
 
     def init(self):
         self.border = ft.Border.all(5, ft.Colors.BLACK_26)
         # self.words = ["A", "B", "C", "D"]
-        self.content = ft.Row(controls=[
+        self.content = ft.Row(
+            controls=[
+                WordPicker(index=self.index, words=self.group.words),
+                ft.Column(
+                    controls=[
 
-            ft.Checkbox(),
-
-            WordPicker(index=self.index, words=self.words)])
-
+                    ]
+                )
+            ]
+        )
 
 
 @ft.control
@@ -111,6 +113,7 @@ class WordPicker(ft.Column):
 
         print(str(self.words))
 
+
 @ft.control
 class DragTile(ft.DragTarget):
     def __init__(self, group, word, index, on_swap, on_change):
@@ -124,7 +127,7 @@ class DragTile(ft.DragTarget):
             ),
         )
         super().__init__(content)
-        self.index=index
+        self.index = index
         self.group = group
         self.word = word
         self.on_accept = on_swap
