@@ -2,10 +2,13 @@ from dataclasses import field
 
 import flet as ft
 from experiments.wordExperiment.WordGroup import WordGroup
+from flet.controls import alignment
 from ui.AppState import AppState
+from ui.FletUtils import playSound
 
 
 def PersonalizeView(page: ft.Page, state: AppState):
+    """A screen to personalize an experiment"""
     widgets = []
 
     word_groups = state.word_groups
@@ -70,11 +73,40 @@ class GroupCustomization(ft.Container):
                 WordPicker(index=self.index, words=self.group.words),
                 ft.Column(
                     controls=[
-
+                        SoundPicker(word_group=self.group),
+                        ft.TextField(value=self.group.correct, on_change=self.handle_text_change),
                     ]
                 )
             ]
         )
+
+    def handle_text_change(self, e):
+        self.group.correct = e.control.value
+
+
+
+@ft.control
+class SoundPicker(ft.Container):
+    """A widget to show, play and modify the picked sound of a word_group"""
+
+    page: ft.Page = None
+    word_group: WordGroup = None
+
+    def init(self):
+        self.content = ft.Row(
+            controls=[
+                ft.Text(self.word_group.sound),
+                ft.IconButton(
+                    icon=ft.Icons.PLAY_ARROW,
+                    icon_color=ft.Colors.BLUE,
+                    icon_size=40,
+                    on_click=self.playsound
+                )
+            ]
+        )
+
+    async def playsound(self):
+        await playSound(self.word_group.sound)
 
 
 @ft.control
@@ -105,6 +137,7 @@ class WordPicker(ft.Column):
         # On reconstruit la grille proprement
         self.build_grid()
         self.update()
+        self.expand=True,
 
     def handle_change_word(self, e):
         print(str(e.control.value))
@@ -118,12 +151,15 @@ class WordPicker(ft.Column):
 class DragTile(ft.DragTarget):
     def __init__(self, group, word, index, on_swap, on_change):
         content = ft.Draggable(
+            expand=True,
             group=group,
             content=ft.Container(
-                content=ft.TextField(value=word, on_change=on_change),
+                expand=True,
+                content=ft.TextField(value=word, on_change=on_change,expand=True),
                 width=100,
                 height=100,
-                border=ft.Border.all(2, ft.Colors.BLUE)
+                border=ft.Border.all(2, ft.Colors.BLUE),
+                alignment=ft.Alignment.CENTER
             ),
         )
         super().__init__(content)
