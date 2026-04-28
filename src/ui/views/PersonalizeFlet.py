@@ -16,7 +16,7 @@ def PersonalizeView(page: ft.Page, state: AppState):
 
     group_list = [
         GroupCustomization(
-            index=i,
+            group_index=i,
             word_group=group,
             page=page
         )
@@ -57,13 +57,13 @@ def PersonalizeView(page: ft.Page, state: AppState):
 
 @ft.control
 class GroupCustomization(ft.DragTarget):
-    def __init__(self, index, word_group, page):
-        content = self.build_content(page, index, word_group)
+    def __init__(self, group_index, word_group, page):
+        content = self.build_content(page, group_index, word_group)
 
         super().__init__(content)
         self.content = content
         self.group = "GROUP_SWAP"
-        self.index = index
+        self.group_index = group_index
         self.word_group = word_group
         self.on_accept = self.handle_group_swap
 
@@ -71,46 +71,42 @@ class GroupCustomization(ft.DragTarget):
         if page == None:
             page = self.page
         if index == None:
-            index = self.index
+            index = self.group_index
         if word_group == None:
             word_group = self.word_group
 
-        print(str(page))
+        draggable_content = ft.Container(
+            border=ft.Border.all(5, ft.Colors.BLACK_26),
+            padding=5,
+            margin=ft.Margin.symmetric(vertical=5),
+            bgcolor=ft.Colors.SURFACE,
+            content=ft.Row(
+                controls=[
+                    WordPicker(group_index=index, words=page.data.word_groups[index].words),
+                    ft.Column(
+                        controls=[
+                            SoundPicker(word_group=word_group),
+                            CorrectAnwserWidget(word_group=word_group)
+                        ]
+                    )
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER
+            ),
+        )
 
         return ft.Draggable(
             group="GROUP_SWAP",
             data=self,
-            content=ft.Container(
-                border=ft.Border.all(5, ft.Colors.BLACK_26),
-                padding=5,
-                margin=ft.Margin.symmetric(vertical=5),
-                bgcolor=ft.Colors.SURFACE,
-                content=ft.Row(
-                    controls=[
-                        WordPicker(index=index, words=page.data.word_groups[index].words),
-                        ft.Column(
-                            controls=[
-                                SoundPicker(word_group=word_group),
-                                CorrectAnwserWidget(word_group=word_group)
-                            ]
-                        )
-                    ],
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    vertical_alignment=ft.CrossAxisAlignment.CENTER
-                ),
-            ),
+            axis=ft.Axis.VERTICAL,
+            content=draggable_content,
             # Feedback visuel pendant le déplacement (optionnel mais recommandé)
-            content_feedback=ft.Container(
-                content=ft.Text(f"Déplacement du groupe {index + 1}..."),
-                padding=20,
-                bgcolor=ft.Colors.with_opacity(0.5, "blue"),
-                border_radius=10
-            )
+            content_feedback=draggable_content
         )
 
     def handle_group_swap(self, event: ft.DragTargetEvent):
-        src_idx = event.src.data.index
-        dst_idx = event.control.index
+        src_idx = event.src.data.group_index
+        dst_idx = event.control.group_index
 
         if src_idx == dst_idx:
             return
@@ -181,7 +177,7 @@ class CorrectAnwserWidget(ft.Container):
 class WordPicker(ft.Column):
     """A widget to arrange 4 words in a grid"""
     words: list[str] = field(default_factory=list)
-    index: int = -1
+    group_index: int = -1
 
     def init(self):
         self.expand = True
@@ -189,8 +185,8 @@ class WordPicker(ft.Column):
 
     def build_grid(self):
         self.controls = [
-            ft.Row(controls=[DragTile(str(self.index), self.words[0], 0, self.handle_swap, self.handle_change_word), DragTile(str(self.index), self.words[1], 1, self.handle_swap, self.handle_change_word), ], expand=True),
-            ft.Row(controls=[DragTile(str(self.index), self.words[2], 2, self.handle_swap, self.handle_change_word), DragTile(str(self.index), self.words[3], 3, self.handle_swap, self.handle_change_word), ], expand=True)]
+            ft.Row(controls=[DragTile(self.words[0], self.group_index, 0, self.handle_swap, self.handle_change_word), DragTile(self.words[1], self.group_index, 1, self.handle_swap, self.handle_change_word), ], expand=True),
+            ft.Row(controls=[DragTile(self.words[2], self.group_index, 2, self.handle_swap, self.handle_change_word), DragTile(self.words[3], self.group_index, 3, self.handle_swap, self.handle_change_word), ], expand=True)]
 
     def handle_swap(self, e: ft.DragTargetEvent):
         print(str(e.src.parent.word))
@@ -208,19 +204,18 @@ class WordPicker(ft.Column):
         self.expand = True
 
     def handle_change_word(self, e):
-        print(str(e.control.value))
-        print(str(e.control.parent.parent.parent.index))
-        self.words[e.control.parent.parent.parent.index] = e.control.value
+        word_index = e.control.parent.parent.parent.word_index
 
-        print(str(self.words))
+        self.page.data.word_groups[self.group_index].words[word_index] = e.control.value
+
 
 
 @ft.control
 class DragTile(ft.DragTarget):
-    def __init__(self, group, word, index, on_swap, on_change):
+    def __init__(self, word, group_index, word_index, on_swap, on_change):
         content = ft.Draggable(
             expand=True,
-            group=group,
+            group=str(group_index),
             content=ft.Container(
                 expand=True,
                 content=ft.TextField(value=word, on_change=on_change, expand=True),
@@ -231,11 +226,10 @@ class DragTile(ft.DragTarget):
             ),
         )
         super().__init__(content)
-        self.index = index
-        self.group = group
-        self.word = word
+        self.word_index = word_index
+        self.group_index = group_index
         self.on_accept = on_swap
-        self.data = index
+        self.data = word_index
         self.expand = True
 
     def handleChange(self, e):
