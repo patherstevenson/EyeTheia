@@ -3,6 +3,7 @@ from dataclasses import field
 import flet as ft
 from experiments.wordExperiment.WordGroup import WordGroup
 from flet.controls import alignment
+from torch.nn.modules import padding
 from ui.AppState import AppState
 from ui.FletUtils import playSound
 
@@ -58,25 +59,34 @@ def PersonalizeView(page: ft.Page, state: AppState):
         vertical_alignment=ft.CrossAxisAlignment.CENTER
     )
 
+
 @ft.control
-class CorrectAnwserWidget(ft.Dropdown):
+class CorrectAnwserWidget(ft.Container):
     word_group: WordGroup = None
 
     def init(self):
-        self.options = []
+        options = []
+        self.content = ft.Row(
+            controls=[
+                ft.Text("Correct Answer : "),
+                ft.Dropdown(
+                    options=options,
+                    value=self.word_group.correct,
+                    on_select=self.handle_select,
+                )
+            ],
+        )
+        self.padding=2
+        self.margin=5
 
         for word in self.word_group.words:
-            self.options.append(ft.DropdownOption(key=word, text=word))
+            options.append(ft.DropdownOption(key=word, text=word))
 
-        self.value = self.word_group.correct
-
-        self.on_select=self.handle_select
+            self.border = ft.Border.all(2, ft.Colors.GREY)
 
     def handle_select(self, e):
-        self.word_group.correct=e.control.value
+        self.word_group.correct = e.control.value
         print(self.word_group.correct)
-
-
 
 
 @ft.control
@@ -98,12 +108,15 @@ class GroupCustomization(ft.Container):
 
                     ]
                 )
-            ]
+            ],
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER
         )
+        self.padding=5
+        self.margin=ft.Margin.symmetric(vertical=5)
 
     def handle_text_change(self, e):
         self.group.correct = e.control.value
-
 
 
 @ft.control
@@ -158,7 +171,7 @@ class WordPicker(ft.Column):
         # On reconstruit la grille proprement
         self.build_grid()
         self.update()
-        self.expand=True,
+        self.expand = True
 
     def handle_change_word(self, e):
         print(str(e.control.value))
@@ -176,10 +189,10 @@ class DragTile(ft.DragTarget):
             group=group,
             content=ft.Container(
                 expand=True,
-                content=ft.TextField(value=word, on_change=on_change,expand=True),
+                content=ft.TextField(value=word, on_change=on_change, expand=True),
                 width=100,
                 height=100,
-                border=ft.Border.all(2, ft.Colors.BLUE),
+                # border=ft.Border.all(2, ft.Colors.BLUE),
                 alignment=ft.Alignment.CENTER
             ),
         )
