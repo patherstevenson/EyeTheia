@@ -58,6 +58,26 @@ def PersonalizeView(page: ft.Page, state: AppState):
         vertical_alignment=ft.CrossAxisAlignment.CENTER
     )
 
+@ft.control
+class CorrectAnwserWidget(ft.Dropdown):
+    word_group: WordGroup = None
+
+    def init(self):
+        self.options = []
+
+        for word in self.word_group.words:
+            self.options.append(ft.DropdownOption(key=word, text=word))
+
+        self.value = self.word_group.correct
+
+        self.on_select=self.handle_select
+
+    def handle_select(self, e):
+        self.word_group.correct=e.control.value
+        print(self.word_group.correct)
+
+
+
 
 @ft.control
 class GroupCustomization(ft.Container):
@@ -74,7 +94,8 @@ class GroupCustomization(ft.Container):
                 ft.Column(
                     controls=[
                         SoundPicker(word_group=self.group),
-                        ft.TextField(value=self.group.correct, on_change=self.handle_text_change),
+                        CorrectAnwserWidget(word_group=self.group)
+
                     ]
                 )
             ]
