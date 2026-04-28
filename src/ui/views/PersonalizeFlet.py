@@ -67,11 +67,11 @@ class GroupCustomization(ft.DragTarget):
         self.word_group = word_group
         self.on_accept = self.handle_group_swap
 
-    def build_content(self, page=None, index=None, word_group=None):
+    def build_content(self, page=None, group_index=None, word_group=None):
         if page == None:
             page = self.page
-        if index == None:
-            index = self.group_index
+        if group_index == None:
+            group_index = self.group_index
         if word_group == None:
             word_group = self.word_group
 
@@ -82,11 +82,11 @@ class GroupCustomization(ft.DragTarget):
             bgcolor=ft.Colors.SURFACE,
             content=ft.Row(
                 controls=[
-                    WordPicker(group_index=index, words=page.data.word_groups[index].words),
+                    WordPicker(group_index=group_index, words=page.data.word_groups[group_index].words),
                     ft.Column(
                         controls=[
-                            SoundPicker(word_group=word_group),
-                            CorrectAnwserWidget(word_group=word_group)
+                            SoundPicker(group_index=group_index, word_groups = page.data.word_groups),
+                            CorrectAnwserWidget(group_index=group_index, word_groups = page.data.word_groups)
                         ]
                     )
                 ],
@@ -124,13 +124,14 @@ class GroupCustomization(ft.DragTarget):
 class SoundPicker(ft.Container):
     """A widget to show, play and modify the picked sound of a word_group"""
 
-    page: ft.Page = None
     word_group: WordGroup = None
+    group_index: int = -1
+    word_groups: list[WordGroup] = field(default_factory=list)
 
     def init(self):
         self.content = ft.Row(
             controls=[
-                ft.Text(self.word_group.sound),
+                ft.Text(self.word_groups[self.group_index].sound),
                 ft.IconButton(
                     icon=ft.Icons.PLAY_ARROW,
                     icon_color=ft.Colors.BLUE,
@@ -141,12 +142,14 @@ class SoundPicker(ft.Container):
         )
 
     async def playsound(self):
-        await playSound(self.word_group.sound)
+        await playSound(self.word_groups[self.group_index].sound)
 
 
 @ft.control
 class CorrectAnwserWidget(ft.Container):
     word_group: WordGroup = None
+    group_index: int = -1
+    word_groups: list[WordGroup] = field(default_factory=list)
 
     def init(self):
         options = []
@@ -155,7 +158,7 @@ class CorrectAnwserWidget(ft.Container):
                 ft.Text("Correct Answer : "),
                 ft.Dropdown(
                     options=options,
-                    value=self.word_group.correct,
+                    value=self.word_groups[self.group_index].correct,
                     on_select=self.handle_select,
                 )
             ],
@@ -163,14 +166,14 @@ class CorrectAnwserWidget(ft.Container):
         self.padding = 2
         self.margin = 5
 
-        for word in self.word_group.words:
+        for word in self.word_groups[self.group_index].words:
             options.append(ft.DropdownOption(key=word, text=word))
 
             self.border = ft.Border.all(2, ft.Colors.GREY)
 
     def handle_select(self, e):
-        self.word_group.correct = e.control.value
-        print(self.word_group.correct)
+        self.word_groups[self.group_index].correct = e.control.value
+        print(self.word_groups[self.group_index].correct)
 
 
 @ft.control
