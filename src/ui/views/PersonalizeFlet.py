@@ -2,8 +2,6 @@ from dataclasses import field
 
 import flet as ft
 from experiments.wordExperiment.WordGroup import WordGroup
-from flet.controls import alignment
-from torch.nn.modules import padding
 from ui.AppState import AppState
 from ui.FletUtils import playSound
 
@@ -12,27 +10,24 @@ def PersonalizeView(page: ft.Page, state: AppState):
     """A screen to personalize an experiment"""
     widgets = []
 
+    page.data = state
+
     word_groups = state.word_groups
 
     group_list = [
-        ft.Draggable(
-            content=GroupCustomization(
-                index=i,
-                group=group
-            ),
-            group=str(i)
+        GroupCustomization(
+            index=i,
+            word_group=group,
+            page=page
         )
-        for i, group in enumerate(word_groups)
+        for i, group in enumerate(state.word_groups)
     ]
-
     widgets.append(
-        ft.ReorderableListView(
+        ft.Column(
             controls=group_list,
             expand=1,
-            auto_scroll=True,
-            height=page.height - 100,
-            on_reorder=handle_reorder,
-            spacing=120
+            scroll=ft.ScrollMode.AUTO,  # Remplace auto_scroll
+            spacing=20  # Espacement entre tes groupes
         )
     )
 
@@ -61,62 +56,72 @@ def PersonalizeView(page: ft.Page, state: AppState):
 
 
 @ft.control
-class CorrectAnwserWidget(ft.Container):
-    word_group: WordGroup = None
+class GroupCustomization(ft.DragTarget):
+    def __init__(self, index, word_group, page):
+        content = self.build_content(page, index, word_group)
 
-    def init(self):
-        options = []
-        self.content = ft.Row(
-            controls=[
-                ft.Text("Correct Answer : "),
-                ft.Dropdown(
-                    options=options,
-                    value=self.word_group.correct,
-                    on_select=self.handle_select,
-                )
-            ],
-        )
-        self.padding=2
-        self.margin=5
+        super().__init__(content)
+        self.content = content
+        self.group = "GROUP_SWAP"
+        self.index = index
+        self.word_group = word_group
+        self.on_accept = self.handle_group_swap
 
-        for word in self.word_group.words:
-            options.append(ft.DropdownOption(key=word, text=word))
+    def build_content(self, page=None, index=None, word_group=None):
+        if page == None:
+            page = self.page
+        if index == None:
+            index = self.index
+        if word_group == None:
+            word_group = self.word_group
 
-            self.border = ft.Border.all(2, ft.Colors.GREY)
+        print(str(page))
 
-    def handle_select(self, e):
-        self.word_group.correct = e.control.value
-        print(self.word_group.correct)
-
-
-@ft.control
-class GroupCustomization(ft.Container):
-    """A widget to configure a single WordGroup"""
-    index: int = -1
-    group: WordGroup = None
-
-    def init(self):
-        self.border = ft.Border.all(5, ft.Colors.BLACK_26)
-        # self.words = ["A", "B", "C", "D"]
-        self.content = ft.Row(
-            controls=[
-                WordPicker(index=self.index, words=self.group.words),
-                ft.Column(
+        return ft.Draggable(
+            group="GROUP_SWAP",
+            data=self,
+            content=ft.Container(
+                border=ft.Border.all(5, ft.Colors.BLACK_26),
+                padding=5,
+                margin=ft.Margin.symmetric(vertical=5),
+                bgcolor=ft.Colors.SURFACE,
+                content=ft.Row(
                     controls=[
-                        SoundPicker(word_group=self.group),
-                        CorrectAnwserWidget(word_group=self.group)
-
-                    ]
-                )
-            ],
-            alignment=ft.MainAxisAlignment.CENTER,
-            vertical_alignment=ft.CrossAxisAlignment.CENTER
+                        WordPicker(index=index, words=page.data.word_groups[index].words),
+                        ft.Column(
+                            controls=[
+                                SoundPicker(word_group=word_group),
+                                CorrectAnwserWidget(word_group=word_group)
+                            ]
+                        )
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER
+                ),
+            ),
+            # Feedback visuel pendant le déplacement (optionnel mais recommandé)
+            content_feedback=ft.Container(
+                content=ft.Text(f"Déplacement du groupe {index + 1}..."),
+                padding=20,
+                bgcolor=ft.Colors.with_opacity(0.5, "blue"),
+                border_radius=10
+            )
         )
-        self.padding=5
-        self.margin=ft.Margin.symmetric(vertical=5)
 
-    def handle_text_change(self, e):
-        self.group.correct = e.control.value
+    def handle_group_swap(self, event: ft.DragTargetEvent):
+        src_idx = event.src.data.index
+        dst_idx = event.control.index
+
+        if src_idx == dst_idx:
+            return
+
+        word_groups = event.page.data.word_groups
+        word_groups[src_idx], word_groups[dst_idx] = word_groups[dst_idx], word_groups[src_idx]
+
+        event.src.parent.content = event.src.parent.build_content()
+        # event.src.parent.update()
+        event.control.content = event.control.build_content()
+        # event.control.update()
 
 
 @ft.control
@@ -141,6 +146,35 @@ class SoundPicker(ft.Container):
 
     async def playsound(self):
         await playSound(self.word_group.sound)
+
+
+@ft.control
+class CorrectAnwserWidget(ft.Container):
+    word_group: WordGroup = None
+
+    def init(self):
+        options = []
+        self.content = ft.Row(
+            controls=[
+                ft.Text("Correct Answer : "),
+                ft.Dropdown(
+                    options=options,
+                    value=self.word_group.correct,
+                    on_select=self.handle_select,
+                )
+            ],
+        )
+        self.padding = 2
+        self.margin = 5
+
+        for word in self.word_group.words:
+            options.append(ft.DropdownOption(key=word, text=word))
+
+            self.border = ft.Border.all(2, ft.Colors.GREY)
+
+    def handle_select(self, e):
+        self.word_group.correct = e.control.value
+        print(self.word_group.correct)
 
 
 @ft.control
@@ -206,10 +240,3 @@ class DragTile(ft.DragTarget):
 
     def handleChange(self, e):
         new_word = e.control.word
-
-
-def handle_reorder(e: ft.OnReorderEvent):
-    rlv = e.control
-    moved_item = rlv.controls.pop(e.old_index)  # Remove the reordered item from its old position
-    rlv.controls.insert(e.new_index, moved_item)  # Insert the reordered item into its new position
-    rlv.update()
