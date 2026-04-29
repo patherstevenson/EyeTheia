@@ -82,11 +82,11 @@ class GroupCustomization(ft.DragTarget):
             bgcolor=ft.Colors.SURFACE,
             content=ft.Row(
                 controls=[
-                    WordPicker(group_index=group_index, words=page.data.word_groups[group_index].words),
+                    WordPicker(group_index=group_index),
                     ft.Column(
                         controls=[
-                            SoundPicker(group_index=group_index, word_groups = page.data.word_groups),
-                            CorrectAnwserWidget(group_index=group_index, word_groups = page.data.word_groups)
+                            SoundPicker(group_index=group_index, word_groups=page.data.word_groups),
+                            CorrectAnwserWidget(group_index=group_index, word_groups=page.data.word_groups)
                         ]
                     )
                 ],
@@ -144,7 +144,6 @@ class SoundPicker(ft.Container):
     async def playsound(self):
         await playSound(self.word_groups[self.group_index].sound)
 
-
 @ft.control
 class CorrectAnwserWidget(ft.Container):
     word_group: WordGroup = None
@@ -179,61 +178,86 @@ class CorrectAnwserWidget(ft.Container):
 @ft.control
 class WordPicker(ft.Column):
     """A widget to arrange 4 words in a grid"""
-    words: list[str] = field(default_factory=list)
     group_index: int = -1
+
 
     def init(self):
         self.expand = True
-        self.build_grid()
+        self.controls = self.build_grid()
 
     def build_grid(self):
-        self.controls = [
-            ft.Row(controls=[DragTile(self.words[0], self.group_index, 0, self.handle_swap, self.handle_change_word), DragTile(self.words[1], self.group_index, 1, self.handle_swap, self.handle_change_word), ], expand=True),
-            ft.Row(controls=[DragTile(self.words[2], self.group_index, 2, self.handle_swap, self.handle_change_word), DragTile(self.words[3], self.group_index, 3, self.handle_swap, self.handle_change_word), ], expand=True)]
+        print("On build_grid")
+        return [
+            ft.Row(controls=[DragTile(group_index=self.group_index, word_index=0, on_accept=self.handle_swap, data=self.handle_change_word), DragTile(group_index=self.group_index, word_index=1, on_accept=self.handle_swap, data=self.handle_change_word)], expand=True),
+            ft.Row(controls=[DragTile(group_index=self.group_index, word_index=2, on_accept=self.handle_swap, data=self.handle_change_word), DragTile(group_index=self.group_index, word_index=3, on_accept=self.handle_swap, data=self.handle_change_word)], expand=True)]
+
+    # def build(self):
+    #     print("c'est built")
+    #     for row in self.controls:
+    #         for tile in row.controls:
+    #             print(str(tile.word_index))
+    #             tile.content.content.content.value = self.page.data.word_groups[tile.group_index].words[tile.word_index]
+    #
+    #     self.update()
+
+    def before_update(self):
+        for row in self.controls:
+            for tile in row.controls:
+                print("je vais update l'affichage")
+                tile.content.content.content.value = self.page.data.word_groups[tile.group_index].words[tile.word_index]
 
     def handle_swap(self, e: ft.DragTargetEvent):
-        print(str(e.src.parent.word))
+        print("Swap")
+        print(str(e.src.parent.word_index))
+        print(str(e.control.word_index))
 
-        print(self.words)
+        # print(self.words)
 
-        src_index = self.words.index(e.src.parent.word)
-        new_index = self.words.index(e.control.word)
+        src_word_index = e.src.parent.word_index
+        new_word_index = e.control.word_index
 
-        self.words[src_index], self.words[new_index] = self.words[new_index], self.words[src_index]
+        word_groups = self.page.data.word_groups[self.group_index].words
 
-        # On reconstruit la grille proprement
-        self.build_grid()
+        word_groups[src_word_index], word_groups[new_word_index] = word_groups[new_word_index], word_groups[src_word_index]
+
+        self.controls = [
+            ft.Row(controls=[DragTile(group_index=self.group_index, word_index=0, on_accept=self.handle_swap, data=self.handle_change_word), DragTile(group_index=self.group_index, word_index=1, on_accept=self.handle_swap, data=self.handle_change_word)], expand=True),
+            ft.Row(controls=[DragTile(group_index=self.group_index, word_index=2, on_accept=self.handle_swap, data=self.handle_change_word), DragTile(group_index=self.group_index, word_index=3, on_accept=self.handle_swap, data=self.handle_change_word)], expand=True)]
+
+
+
+        # On affiche les modifs
         self.update()
-        self.expand = True
 
     def handle_change_word(self, e):
+        print("Change Word")
         word_index = e.control.parent.parent.parent.word_index
 
         self.page.data.word_groups[self.group_index].words[word_index] = e.control.value
 
 
-
 @ft.control
 class DragTile(ft.DragTarget):
-    def __init__(self, word, group_index, word_index, on_swap, on_change):
-        content = ft.Draggable(
+    word_index: int = -1
+    group_index: int = -1
+    content: ft.control = None
+
+    def init(self):
+        self.content = ft.Draggable(
             expand=True,
-            group=str(group_index),
+            group=str(self.group_index),
             content=ft.Container(
                 expand=True,
-                content=ft.TextField(value=word, on_change=on_change, expand=True),
+                content=ft.TextField(on_change=self.data, expand=True),
                 width=100,
                 height=100,
                 # border=ft.Border.all(2, ft.Colors.BLUE),
                 alignment=ft.Alignment.CENTER
             ),
         )
-        super().__init__(content)
-        self.word_index = word_index
-        self.group_index = group_index
-        self.on_accept = on_swap
-        self.data = word_index
+
         self.expand = True
+        self.group=str(self.group_index)
 
     def handleChange(self, e):
         new_word = e.control.word
