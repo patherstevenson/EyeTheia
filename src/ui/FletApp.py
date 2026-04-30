@@ -31,6 +31,8 @@ async def main(page: ft.Page):
         ],
     )
 
+    page.data = state
+
     page.window.always_on_top = True
 
     async def route_change(e: ft.RouteChangeEvent):
