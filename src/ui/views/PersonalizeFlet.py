@@ -43,10 +43,13 @@ def PersonalizeView(page: ft.Page, state: AppState):
                                               description="Maximum time to chose a word",
                                               data=page.data.settings),
                             AppSettingsWidget(setting=AppSettingsEnum.TIME_TO_WAIT_BETWEEN,
-                                              value_picker=NumberPicker(),
+                                              value_picker=NumberPicker(step = 0.5),
                                               description="Time to wait between 2 word groups",
                                               data=page.data.settings),
-                            ft.IconButton(icon=ft.Icons.RUN_CIRCLE, on_click= lambda _: print(page.data.settings.max_time_to_choose))
+                            AppSettingsWidget(setting=AppSettingsEnum.GAZE_PER_SECOND,
+                                              value_picker=NumberPicker(step = 1),
+                                              description="Number of gaze the app will try to make avery second",
+                                              data=page.data.settings),
                         ],
                         expand=1,
                     ),
@@ -241,7 +244,7 @@ class AppSettingsWidget(ft.Container):
             ]
         )
 
-    def update_value(self, e, modify = 0):
+    def update_value(self, e, modify=0):
         """Updates the value in the App setting and in the Picker Object"""
         new_value = self.value_picker.float_value() + modify
         self.value_picker.value = new_value
@@ -253,6 +256,7 @@ class AppSettingsWidget(ft.Container):
 class NumberPicker(ft.Row):
     setting: AppSettingsEnum = None
     value: str = "0"
+    step: float = 1.0
 
     def set_value_updater(self, method: Callable):
         self.text_field.on_change = method
@@ -265,9 +269,9 @@ class NumberPicker(ft.Row):
                                        )
 
         self.controls = [
-            ft.IconButton(icon=ft.Icons.EXPOSURE_MINUS_1_SHARP, on_click=self.button_down),
+            ft.IconButton(icon=ft.Icons.REMOVE, on_click=self.button_down),
             self.text_field,
-            ft.IconButton(icon=ft.Icons.PLUS_ONE, on_click=self.button_up),
+            ft.IconButton(icon=ft.Icons.ADD, on_click=self.button_up),
         ]
 
     def on_textField_change(self, e):
@@ -275,16 +279,16 @@ class NumberPicker(ft.Row):
         self.value = e.control.value
 
     def button_up(self, e):
-        self.value = str(float(self.value) + 1)
-        self.text_field.on_change(e, 1)
+        self.value = str(float(self.value) + self.step)
+        self.text_field.on_change(e, self.step)
 
     def button_down(self, e):
-        self.value = str(float(self.value) - 1)
-        self.text_field.on_change(e, -1)
+        self.value = str(float(self.value) - self.step)
+        self.text_field.on_change(e, 0 - self.step)
 
         self.update()
 
-    def update_text_field(self, suffix = ""):
+    def update_text_field(self, suffix=""):
         val = str(self.value) + suffix
         # self.text_field.value = val.strip(".0") if val.endswith(".0") else val
         self.text_field.value = val
@@ -295,5 +299,3 @@ class NumberPicker(ft.Row):
         if val == "":
             return 0.0
         return float(val)
-
-
