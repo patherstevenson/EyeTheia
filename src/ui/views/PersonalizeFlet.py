@@ -1,6 +1,8 @@
-import flet as ft
+from typing import Callable
 
+import flet as ft
 from experiments.wordExperiment.WordGroup import WordGroup
+from ui.AppSettings import AppSettingsEnum
 from ui.AppState import AppState
 from ui.FletUtils import playSound
 
@@ -35,7 +37,11 @@ def PersonalizeView(page: ft.Page, state: AppState):
                             ft.Button(
                                 content="Go Back to Main Menu",
                                 on_click=lambda _: page.run_task(page.push_route, "/WordExperiment"),
-                            )
+                            ),
+                            AppSettingsWidget(setting=AppSettingsEnum.MAX_TIME_TO_CHOOSE,
+                                              value_picker=NumberPicker(),
+                                              description="Maximum time to chose a word"),
+                            ft.IconButton(icon=ft.Icons.RUN_CIRCLE, on_click= lambda _: print(page.data.settings.max_time_to_choose))
                         ],
                         expand=1,
                     ),
@@ -46,6 +52,23 @@ def PersonalizeView(page: ft.Page, state: AppState):
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         vertical_alignment=ft.MainAxisAlignment.CENTER,
     )
+
+
+def handle_reorder(e: ft.OnReorderEvent, state: AppState):
+    word_groups = list(state.word_groups)
+    moved_group = word_groups.pop(e.old_index)
+    word_groups.insert(e.new_index, moved_group)
+    state.set_word_groups(word_groups)
+
+    reordered_controls = list(e.control.controls)
+    moved_control = reordered_controls.pop(e.old_index)
+    reordered_controls.insert(e.new_index, moved_control)
+
+    for index, control in enumerate(reordered_controls):
+        control.group_index = index
+
+    e.control.controls = reordered_controls
+    e.control.update()
 
 
 @ft.control
@@ -191,18 +214,65 @@ class DragTile(ft.DragTarget):
         super().__init__(content=content, on_accept=on_swap, data=index, expand=True)
 
 
-def handle_reorder(e: ft.OnReorderEvent, state: AppState):
-    word_groups = list(state.word_groups)
-    moved_group = word_groups.pop(e.old_index)
-    word_groups.insert(e.new_index, moved_group)
-    state.set_word_groups(word_groups)
+@ft.control
+class AppSettingsWidget(ft.Container):
+    setting: AppSettingsEnum = None
+    value_picker: ft.Control = None
+    description: str = ""
 
-    reordered_controls = list(e.control.controls)
-    moved_control = reordered_controls.pop(e.old_index)
-    reordered_controls.insert(e.new_index, moved_control)
+    def init(self):
+        self.value_picker.set_value_updater(self.update_value)
 
-    for index, control in enumerate(reordered_controls):
-        control.group_index = index
+        self.content = ft.Row(
+            controls=[
+                ft.Icon(ft.Icons.SETTINGS, color=ft.Colors.BLUE),
+                self.value_picker,
+                ft.Text(value=self.description, weight=ft.FontWeight.W_600),
+            ]
+        )
 
-    e.control.controls = reordered_controls
-    e.control.update()
+    def update_value(self, e, modify = 0):
+        new_value = float(self.value_picker.text_field.value) + modify
+        self.value_picker.value = new_value
+        self.value_picker.update_text_field()
+        setattr(self.page.data.settings, self.setting.value, new_value)
+
+
+@ft.control
+class NumberPicker(ft.Row):
+    value: float = 0
+
+    def set_value_updater(self, method: Callable):
+        self.text_field.on_change = method
+
+    def init(self):
+        self.text_field = ft.TextField(value=str(self.value),
+                                       # input_filter=ft.NumbersOnlyInputFilter(),
+                                       keyboard_type=ft.KeyboardType.NUMBER,
+                                       input_filter=ft.NumbersOnlyInputFilter(),
+                                       # on_change=self.on_textField_change
+                                       )
+
+        self.controls = [
+            ft.IconButton(icon=ft.Icons.EXPOSURE_MINUS_1_SHARP, on_click=self.button_down),
+            self.text_field,
+            ft.IconButton(icon=ft.Icons.PLUS_ONE, on_click=self.button_up),
+        ]
+
+    def on_textField_change(self, e):
+        print(e.control.value)
+        self.value = int(e.control.value)
+
+    def button_up(self, e):
+        self.value += 1
+        self.text_field.on_change(e, 1)
+
+    def button_down(self, e):
+        self.value -= 1
+        self.text_field.on_change(e, -1)
+
+        self.update()
+
+    def update_text_field(self):
+        self.text_field.value = self.value
+        self.update()
