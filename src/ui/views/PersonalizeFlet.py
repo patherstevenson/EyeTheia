@@ -40,7 +40,8 @@ def PersonalizeView(page: ft.Page, state: AppState):
                             ),
                             AppSettingsWidget(setting=AppSettingsEnum.MAX_TIME_TO_CHOOSE,
                                               value_picker=NumberPicker(),
-                                              description="Maximum time to chose a word"),
+                                              description="Maximum time to chose a word",
+                                              data=page.data.settings),
                             ft.IconButton(icon=ft.Icons.RUN_CIRCLE, on_click= lambda _: print(page.data.settings.max_time_to_choose))
                         ],
                         expand=1,
@@ -216,11 +217,16 @@ class DragTile(ft.DragTarget):
 
 @ft.control
 class AppSettingsWidget(ft.Container):
+    """The widget used to modify any parameter in AppSettings. Store the reference of the AppSettings in his Data attribute."""
     setting: AppSettingsEnum = None
     value_picker: ft.Control = None
     description: str = ""
 
     def init(self):
+        value = getattr(self.data, self.setting.value)
+        self.value_picker.value = value
+        self.value_picker.text_field.value = str(value)
+        print(getattr(self.data, self.setting.value))
         self.value_picker.set_value_updater(self.update_value)
 
         self.content = ft.Row(
@@ -232,7 +238,8 @@ class AppSettingsWidget(ft.Container):
         )
 
     def update_value(self, e, modify = 0):
-        new_value = float(self.value_picker.text_field.value) + modify
+        """Updates the value in the App setting and in the Picker Object"""
+        new_value = self.value_picker.float_value() + modify
         self.value_picker.value = new_value
         self.value_picker.update_text_field()
         setattr(self.page.data.settings, self.setting.value, new_value)
@@ -240,17 +247,17 @@ class AppSettingsWidget(ft.Container):
 
 @ft.control
 class NumberPicker(ft.Row):
-    value: float = 0
+    setting: AppSettingsEnum = None
+    value: str = "0"
 
     def set_value_updater(self, method: Callable):
         self.text_field.on_change = method
 
     def init(self):
-        self.text_field = ft.TextField(value=str(self.value),
-                                       # input_filter=ft.NumbersOnlyInputFilter(),
+        self.text_field = ft.TextField(value=self.value,
                                        keyboard_type=ft.KeyboardType.NUMBER,
-                                       input_filter=ft.NumbersOnlyInputFilter(),
-                                       # on_change=self.on_textField_change
+                                       input_filter=ft.InputFilter(allow=True, regex_string=r"^(\d+\.)?\d*$", replacement_string=""),
+                                       expand_loose=True,
                                        )
 
         self.controls = [
@@ -261,18 +268,28 @@ class NumberPicker(ft.Row):
 
     def on_textField_change(self, e):
         print(e.control.value)
-        self.value = int(e.control.value)
+        self.value = e.control.value
 
     def button_up(self, e):
-        self.value += 1
+        self.value = str(float(self.value) + 1)
         self.text_field.on_change(e, 1)
 
     def button_down(self, e):
-        self.value -= 1
+        self.value = str(float(self.value) - 1)
         self.text_field.on_change(e, -1)
 
         self.update()
 
-    def update_text_field(self):
-        self.text_field.value = self.value
+    def update_text_field(self, suffix = ""):
+        val = str(self.value) + suffix
+        # self.text_field.value = val.strip(".0") if val.endswith(".0") else val
+        self.text_field.value = val
         self.update()
+
+    def float_value(self):
+        val = self.text_field.value
+        if val == "":
+            return 0.0
+        return float(val)
+
+
