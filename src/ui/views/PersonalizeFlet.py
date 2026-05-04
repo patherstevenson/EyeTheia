@@ -42,6 +42,10 @@ def PersonalizeView(page: ft.Page, state: AppState):
                                               value_picker=NumberPicker(),
                                               description="Maximum time to chose a word",
                                               data=page.data.settings),
+                            AppSettingsWidget(setting=AppSettingsEnum.TIME_TO_WAIT_BETWEEN,
+                                              value_picker=NumberPicker(),
+                                              description="Time to wait between 2 word groups",
+                                              data=page.data.settings),
                             ft.IconButton(icon=ft.Icons.RUN_CIRCLE, on_click= lambda _: print(page.data.settings.max_time_to_choose))
                         ],
                         expand=1,
