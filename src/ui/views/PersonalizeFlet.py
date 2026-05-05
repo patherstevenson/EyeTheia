@@ -242,10 +242,11 @@ class AppSettingsWidget(ft.Container):
 
         self.content = ft.Row(
             controls=[
-                ft.Icon(ft.Icons.SETTINGS, color=ft.Colors.BLUE),
+                ft.Icon(ft.Icons.SETTINGS, color=ft.Colors.BLUE, expand=1),
                 self.value_picker,
-                ft.Text(value=self.description, weight=ft.FontWeight.W_600),
-            ]
+                ft.Text(value=self.description, weight=ft.FontWeight.W_600, expand=8),
+            ],
+            tight=True
         )
 
     def update_intern_value(self, e, new_value=None):
@@ -283,6 +284,10 @@ class NumberPicker(ft.Row):
             ft.IconButton(icon=ft.Icons.ADD, on_click=self.button_up),
         ]
 
+        self.alignment = ft.MainAxisAlignment.SPACE_BETWEEN
+
+
+
     def button_up(self, e):
         self.text_field.on_change(e, self.value + self.step)
 
@@ -315,7 +320,9 @@ class SliderPicker(ft.Row):
         self.text_field = ft.TextField(value=str(self.value),
                                        keyboard_type=ft.KeyboardType.NUMBER,
                                        input_filter=ft.InputFilter(allow=True, regex_string=r"^(\d+\.)?\d*$", replacement_string=""),
-                                       expand_loose=True, )
+                                       expand_loose=True,
+                                       width=100
+                                       )
 
         self.controls = [
             self.slider,
@@ -326,7 +333,7 @@ class SliderPicker(ft.Row):
         self.built = True
 
     def set_value(self, value):
-        if(value > 1):
+        if (value > 1):
             value = 1.0
         self.value = value
         self.update_shown()
@@ -335,5 +342,5 @@ class SliderPicker(ft.Row):
         """Updates the value shown based on widget value"""
         self.slider.value = self.value
         self.text_field.value = str(self.value)
-        if(self.built):
+        if (self.built):
             self.update()
