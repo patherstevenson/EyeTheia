@@ -43,13 +43,18 @@ def PersonalizeView(page: ft.Page, state: AppState):
                                               description="Maximum time to chose a word",
                                               data=page.data.settings),
                             AppSettingsWidget(setting=AppSettingsEnum.TIME_TO_WAIT_BETWEEN,
-                                              value_picker=NumberPicker(step = 0.5),
+                                              value_picker=NumberPicker(step=0.5),
                                               description="Time to wait between 2 word groups",
                                               data=page.data.settings),
                             AppSettingsWidget(setting=AppSettingsEnum.GAZE_PER_SECOND,
-                                              value_picker=NumberPicker(step = 1),
+                                              value_picker=NumberPicker(step=1),
                                               description="Number of gaze the app will try to make avery second",
                                               data=page.data.settings),
+                            AppSettingsWidget(setting=AppSettingsEnum.BUTTONS_SIZE,
+                                              value_picker=SliderPicker(),
+                                              description="Size of the buttons",
+                                              data=page.data.settings),
+                            ft.IconButton(icon=ft.Icons.BOY, on_click=lambda _: print(page.data.settings.buttons_size))
                         ],
                         expand=1,
                     ),
@@ -232,9 +237,8 @@ class AppSettingsWidget(ft.Container):
     def init(self):
         value = getattr(self.data, self.setting.value)
         self.value_picker.value = value
-        self.value_picker.text_field.value = str(value)
-        print(getattr(self.data, self.setting.value))
-        self.value_picker.set_value_updater(self.update_value)
+        self.value_picker.set_value(value)
+        self.value_picker.set_value_updater(self.update_intern_value)
 
         self.content = ft.Row(
             controls=[
@@ -244,12 +248,17 @@ class AppSettingsWidget(ft.Container):
             ]
         )
 
-    def update_value(self, e, modify=0):
+    def update_intern_value(self, e, new_value=None):
         """Updates the value in the App setting and in the Picker Object"""
-        new_value = self.value_picker.float_value() + modify
-        self.value_picker.value = new_value
-        self.value_picker.update_text_field()
+        if (new_value == None):
+            if new_value == "":
+                new_value = 0.0
+            else:
+                new_value = float(e.control.value)
+        self.value_picker.set_value(new_value)
         setattr(self.page.data.settings, self.setting.value, new_value)
+        self.value_picker.update_shown()
+        self.update()
 
 
 @ft.control
@@ -274,28 +283,57 @@ class NumberPicker(ft.Row):
             ft.IconButton(icon=ft.Icons.ADD, on_click=self.button_up),
         ]
 
-    def on_textField_change(self, e):
-        print(e.control.value)
-        self.value = e.control.value
-
     def button_up(self, e):
-        self.value = str(float(self.value) + self.step)
-        self.text_field.on_change(e, self.step)
+        self.text_field.on_change(e, self.value + self.step)
 
     def button_down(self, e):
-        self.value = str(float(self.value) - self.step)
-        self.text_field.on_change(e, 0 - self.step)
+        self.text_field.on_change(e, self.value - self.step)
 
-        self.update()
+    def set_value(self, value):
+        self.value = value
+        self.text_field.value = str(value)
 
-    def update_text_field(self, suffix=""):
-        val = str(self.value) + suffix
-        # self.text_field.value = val.strip(".0") if val.endswith(".0") else val
-        self.text_field.value = val
-        self.update()
+    def update_shown(self):
+        """Updates the value shown based on widget value"""
+        self.text_field.value = str(self.value)
+        if (self.page):
+            self.update()
 
-    def float_value(self):
-        val = self.text_field.value
-        if val == "":
-            return 0.0
-        return float(val)
+
+@ft.control
+class SliderPicker(ft.Row):
+    setting: AppSettingsEnum = None
+    value: float = 0.0
+
+    def set_value_updater(self, method: Callable):
+        self.slider.on_change = method
+        self.text_field.on_change = method
+
+    def init(self):
+        self.built = False
+        self.slider = ft.Slider(value=self.value)
+        self.text_field = ft.TextField(value=str(self.value),
+                                       keyboard_type=ft.KeyboardType.NUMBER,
+                                       input_filter=ft.InputFilter(allow=True, regex_string=r"^(\d+\.)?\d*$", replacement_string=""),
+                                       expand_loose=True, )
+
+        self.controls = [
+            self.slider,
+            self.text_field
+        ]
+
+    def build(self):
+        self.built = True
+
+    def set_value(self, value):
+        if(value > 1):
+            value = 1.0
+        self.value = value
+        self.update_shown()
+
+    def update_shown(self):
+        """Updates the value shown based on widget value"""
+        self.slider.value = self.value
+        self.text_field.value = str(self.value)
+        if(self.built):
+            self.update()
