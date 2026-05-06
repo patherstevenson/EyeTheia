@@ -7,6 +7,8 @@ from ui.AppSettings import AppSettingsEnum
 from ui.AppState import AppState
 from ui.FletUtils import playSound
 
+import csv
+
 WORDS_PER_GROUP = 4
 
 
@@ -57,7 +59,7 @@ def PersonalizeView(page: ft.Page, state: AppState):
                             ft.Row(
                                 controls=[
                                     ft.Button(content="Load CSV", on_click=loadCSV),
-                                    ft.Button(content="Save To CSV", on_click=saveToCSV),
+                                    ft.Button(content="Save To CSV", on_click=lambda _: page.run_task(saveToCSV, state)),
                                     ft.Button(content="Go Back to Main Menu", on_click=lambda _: page.run_task(page.push_route, "/WordExperiment"),
                                               ),
                                 ],
@@ -80,8 +82,20 @@ def loadCSV():
     print("LoadCSV")
 
 
-def saveToCSV():
-    print("Save To CSV")
+async def saveToCSV(state: AppState):
+
+    fp = ft.FilePicker()
+    file_path = await fp.save_file(dialog_title="Save File", file_name="word_experience.csv", file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=[".csv"])
+
+    with(open(file_path, 'w', newline='')) as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+
+        writer.writerow([state.settings.max_time_to_choose, state.settings.time_to_wait_between, state.settings.buttons_size, state.settings.gaze_per_second])
+
+        for word_group in state.word_groups:
+            writer.writerow(word_group.words + [word_group.correct, word_group.sound])
+
+
 
 
 def handle_reorder(e: ft.OnReorderEvent, state: AppState):
