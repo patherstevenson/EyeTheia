@@ -359,33 +359,32 @@ class ButtonSizePreview(ft.Container):
         self.aspect_ratio = 16 / 9
 
         self.buttons = [
-            ft.Button(content="A", width=480, height=270),
-            ft.Button(content="B", width=480, height=270),
-            ft.Button(content="C", width=480, height=270),
-            ft.Button(content="D", width=480, height=270),
+            ft.Container(
+                content=ft.Button(content=content),
+                expand=1,
+                alignment=ft.Alignment.CENTER,
+            )
+            for content in ["A","B","C","D"]
         ]
 
         self.content = ft.Column(
             controls=[
                 ft.Row(
-                    controls=[
-                        self.buttons[0],
-                        self.buttons[1]
-                    ],
+                    controls=self.buttons[:2],
                     alignment=ft.MainAxisAlignment.CENTER,
                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    expand=True
                 ),
                 ft.Row(
-                    controls=[
-                        self.buttons[2],
-                        self.buttons[3]
-                    ],
+                    controls=self.buttons[2:4],
                     alignment=ft.MainAxisAlignment.CENTER,
                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                )
+                    expand=True
+                ),
             ],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            expand=True,
         )
 
         self.expand = True
@@ -399,8 +398,8 @@ class ButtonSizePreview(ft.Container):
         self.size = self.page.data.settings.buttons_size
 
         for button in self.buttons:
-            button.width = max((self.width or 1920) / 2, 200) * self.size * 0.95
-            button.height = max((self.height or 1080) / 2, 140) * self.size * 0.95
+            button.content.width = max((self.width or 1920) / 2, 200) * self.size * 0.95
+            button.content.height = max((self.height or 1080) / 2, 140) * self.size * 0.95
 
     def handle_resize(self, e):
         self.width = e.width
