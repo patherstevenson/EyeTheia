@@ -1,3 +1,4 @@
+from dataclasses import field
 from typing import Callable
 
 import flet as ft
@@ -25,6 +26,8 @@ def PersonalizeView(page: ft.Page, state: AppState):
         on_reorder=lambda e: handle_reorder(e, state),
         spacing=120,
     )
+
+    button_preview = ButtonSizePreview()
 
     return ft.View(
         controls=[
@@ -54,7 +57,8 @@ def PersonalizeView(page: ft.Page, state: AppState):
                                               value_picker=SliderPicker(),
                                               description="Size of the buttons",
                                               data=page.data.settings),
-                            ft.IconButton(icon=ft.Icons.BOY, on_click=lambda _: print(page.data.settings.buttons_size))
+                            button_preview,
+                            ft.IconButton(icon=ft.Icons.BOY, on_click=lambda _: button_preview.resize_buttons())
                         ],
                         expand=1,
                     ),
@@ -233,6 +237,7 @@ class AppSettingsWidget(ft.Container):
     setting: AppSettingsEnum = None
     value_picker: ft.Control = None
     description: str = ""
+    bound: list[ft.Control] = field(default_factory=list)
 
     def init(self):
         value = getattr(self.data, self.setting.value)
@@ -262,6 +267,8 @@ class AppSettingsWidget(ft.Container):
         self.update()
 
 
+
+
 @ft.control
 class NumberPicker(ft.Row):
     setting: AppSettingsEnum = None
@@ -285,8 +292,6 @@ class NumberPicker(ft.Row):
         ]
 
         self.alignment = ft.MainAxisAlignment.SPACE_BETWEEN
-
-
 
     def button_up(self, e):
         self.text_field.on_change(e, self.value + self.step)
@@ -344,3 +349,57 @@ class SliderPicker(ft.Row):
         self.text_field.value = str(self.value)
         if (self.built):
             self.update()
+            self.parent.parent.update()
+
+
+@ft.control
+class ButtonSizePreview(ft.Container):
+    size: float = 0.5
+
+    def init(self):
+
+
+        self.scale = 1
+
+        self.buttons = [
+            ft.Button(content="A", width=480, height=270),
+            ft.Button(content="B", width=480, height=270),
+            ft.Button(content="C", width=480, height=270),
+            ft.Button(content="D", width=480, height=270),
+        ]
+
+        self.content = ft.Column(
+            controls=[
+                ft.Row(
+                    controls=[
+                        self.buttons[0],
+                        self.buttons[1]
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                ),
+                ft.Row(
+                    controls=[
+                        self.buttons[2],
+                        self.buttons[3]
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                )
+            ],
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        )
+
+    def before_update(self) -> None:
+        self.resize_buttons()
+
+    def resize_buttons(self):
+
+        self.size = self.page.data.settings.buttons_size
+
+        width = max((self.page.window.width or 1920) / 2, 200) * self.size
+        height = max((self.page.window.height or 1080) / 2, 140) * self.size
+        for button in self.buttons:
+            button.width = width
+            button.height = height
