@@ -60,7 +60,7 @@ def PersonalizeView(page: ft.Page, state: AppState):
                             button_preview,
                             ft.IconButton(icon=ft.Icons.BOY, on_click=lambda _: button_preview.resize_buttons())
                         ],
-                        expand=1,
+                        expand=True,
                     ),
                 ],
                 expand=True,
@@ -68,6 +68,7 @@ def PersonalizeView(page: ft.Page, state: AppState):
         ],
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         vertical_alignment=ft.MainAxisAlignment.CENTER,
+        expand=True
     )
 
 
@@ -267,8 +268,6 @@ class AppSettingsWidget(ft.Container):
         self.update()
 
 
-
-
 @ft.control
 class NumberPicker(ft.Row):
     setting: AppSettingsEnum = None
@@ -357,9 +356,7 @@ class ButtonSizePreview(ft.Container):
     size: float = 0.5
 
     def init(self):
-
-
-        self.scale = 1
+        self.aspect_ratio = 16 / 9
 
         self.buttons = [
             ft.Button(content="A", width=480, height=270),
@@ -391,15 +388,20 @@ class ButtonSizePreview(ft.Container):
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         )
 
+        self.expand = True
+        self.on_size_change = self.handle_resize
+        self.border = ft.Border.all(2, ft.Colors.GREY)
+
     def before_update(self) -> None:
         self.resize_buttons()
 
     def resize_buttons(self):
-
         self.size = self.page.data.settings.buttons_size
 
-        width = max((self.page.window.width or 1920) / 2, 200) * self.size
-        height = max((self.page.window.height or 1080) / 2, 140) * self.size
         for button in self.buttons:
-            button.width = width
-            button.height = height
+            button.width = max((self.width or 1920) / 2, 200) * self.size * 0.95
+            button.height = max((self.height or 1080) / 2, 140) * self.size * 0.95
+
+    def handle_resize(self, e):
+        self.width = e.width
+        self.height = e.height
