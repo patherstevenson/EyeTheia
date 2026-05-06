@@ -164,22 +164,37 @@ class SoundPicker(ft.Container):
     word_group: WordGroup = None
 
     def init(self):
+        self.buttons = [
+            ft.Button(content=self.word_group.sound),
+            ft.IconButton(
+                icon=ft.Icons.PLAY_ARROW,
+                icon_color=ft.Colors.BLUE,
+                icon_size=40,
+            ), ]
         self.content = ft.Row(
-            controls=[
-                ft.Text(self.word_group.sound),
-                ft.IconButton(
-                    icon=ft.Icons.PLAY_ARROW,
-                    icon_color=ft.Colors.BLUE,
-                    icon_size=40,
-                    on_click=self.play_sound,
-                ),
-            ]
+            controls=self.buttons
         )
         self.border = ft.Border.all(2, ft.Colors.GREY)
 
-    async def play_sound(self, _):
+    def build(self):
+        self.buttons[0].on_click = lambda _: self.page.run_task(self.choose_sound)
+        self.buttons[1].on_click = lambda _: self.page.run_task(self.play_sound)
+
+    async def play_sound(self):
         await playSound(self.word_group.sound)
 
+    def update_text(self):
+        self.buttons[0].content = self.word_group.sound.split("/")[-1]
+        self.update()
+
+    async def choose_sound(self):
+        print("choose")
+
+        file_path = await ft.FilePicker().pick_files(allow_multiple=False)
+
+        if file_path:
+            self.word_group.sound = file_path[0].path
+        self.update_text()
 
 @ft.control
 class GroupCustomization(ft.Container):
