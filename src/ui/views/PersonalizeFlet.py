@@ -22,9 +22,9 @@ def PersonalizeView(page: ft.Page, state: AppState):
         controls=group_list,
         expand=1,
         auto_scroll=True,
-        height=page.height - 100,
+        height=page.height,
         on_reorder=lambda e: handle_reorder(e, state),
-        spacing=120,
+        on_size_change= lambda e: handle_size_change(e)
     )
 
     button_preview = ButtonSizePreview()
@@ -37,10 +37,6 @@ def PersonalizeView(page: ft.Page, state: AppState):
                     ft.VerticalDivider(),
                     ft.Column(
                         controls=[
-                            ft.Button(
-                                content="Go Back to Main Menu",
-                                on_click=lambda _: page.run_task(page.push_route, "/WordExperiment"),
-                            ),
                             AppSettingsWidget(setting=AppSettingsEnum.MAX_TIME_TO_CHOOSE,
                                               value_picker=NumberPicker(),
                                               description="Maximum time to chose a word",
@@ -58,7 +54,15 @@ def PersonalizeView(page: ft.Page, state: AppState):
                                               description="Size of the buttons",
                                               data=page.data.settings),
                             button_preview,
-                            ft.IconButton(icon=ft.Icons.BOY, on_click=lambda _: button_preview.resize_buttons())
+                            ft.Row(
+                                controls=[
+                                    ft.Button(content="Load CSV", on_click=loadCSV),
+                                    ft.Button(content="Save To CSV", on_click=saveToCSV),
+                                    ft.Button(content="Go Back to Main Menu", on_click=lambda _: page.run_task(page.push_route, "/WordExperiment"),
+                                              ),
+                                ],
+                                alignment=ft.MainAxisAlignment.SPACE_EVENLY
+                            )
                         ],
                         expand=True,
                     ),
@@ -70,6 +74,14 @@ def PersonalizeView(page: ft.Page, state: AppState):
         vertical_alignment=ft.MainAxisAlignment.CENTER,
         expand=True
     )
+
+
+def loadCSV():
+    print("LoadCSV")
+
+
+def saveToCSV():
+    print("Save To CSV")
 
 
 def handle_reorder(e: ft.OnReorderEvent, state: AppState):
@@ -87,6 +99,13 @@ def handle_reorder(e: ft.OnReorderEvent, state: AppState):
 
     e.control.controls = reordered_controls
     e.control.update()
+
+def handle_size_change(e):
+    print("Old : " + str(e.height) + " | New  : " + str(e.height))
+    print(e)
+    e.control.height = e.page.window.height
+    e.control.update()
+
 
 
 @ft.control
@@ -139,7 +158,9 @@ class GroupCustomization(ft.Container):
     def init(self):
         self.expand = True
         self.padding = 10
-        self.border = ft.Border.all(5, ft.Colors.BLACK_26)
+        self.margin = ft.Margin.symmetric(vertical=2.5)
+        self.border = ft.Border.all(3, ft.Colors.BLUE_ACCENT)
+        self.border_radius = ft.BorderRadius.all(5)
         self.content = ft.Row(
             controls=[
                 WordPicker(word_group=self.word_group),
@@ -177,22 +198,14 @@ class WordPicker(ft.Column):
             )
 
     def build_grid(self):
-        words = self.word_group.words
+        tiles = [
+            DragTile(self.word_group.words[index], index, self.handle_swap, self.handle_change_word)
+            for index, word in enumerate(self.word_group.words)
+        ]
+
         self.controls = [
-            ft.Row(
-                controls=[
-                    DragTile(words[0], 0, self.handle_swap, self.handle_change_word),
-                    DragTile(words[1], 1, self.handle_swap, self.handle_change_word),
-                ],
-                expand=True,
-            ),
-            ft.Row(
-                controls=[
-                    DragTile(words[2], 2, self.handle_swap, self.handle_change_word),
-                    DragTile(words[3], 3, self.handle_swap, self.handle_change_word),
-                ],
-                expand=True,
-            ),
+            ft.Row(controls=tiles[:2], expand=True),
+            ft.Row(controls=tiles[2:4], expand=True),
         ]
 
     def handle_swap(self, e: ft.DragTargetEvent):
@@ -282,6 +295,7 @@ class NumberPicker(ft.Row):
                                        keyboard_type=ft.KeyboardType.NUMBER,
                                        input_filter=ft.InputFilter(allow=True, regex_string=r"^(\d+\.)?\d*$", replacement_string=""),
                                        expand_loose=True,
+                                       text_align=ft.TextAlign.CENTER,
                                        )
 
         self.controls = [
@@ -325,7 +339,8 @@ class SliderPicker(ft.Row):
                                        keyboard_type=ft.KeyboardType.NUMBER,
                                        input_filter=ft.InputFilter(allow=True, regex_string=r"^(\d+\.)?\d*$", replacement_string=""),
                                        expand_loose=True,
-                                       width=100
+                                       width=100,
+                                       text_align=ft.TextAlign.CENTER,
                                        )
 
         self.controls = [
@@ -364,7 +379,7 @@ class ButtonSizePreview(ft.Container):
                 expand=1,
                 alignment=ft.Alignment.CENTER,
             )
-            for content in ["A","B","C","D"]
+            for content in ["A", "B", "C", "D"]
         ]
 
         self.content = ft.Column(
