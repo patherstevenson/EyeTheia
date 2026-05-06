@@ -1,3 +1,4 @@
+import csv
 from dataclasses import field
 from typing import Callable
 
@@ -6,8 +7,6 @@ from experiments.wordExperiment.WordGroup import WordGroup
 from ui.AppSettings import AppSettingsEnum
 from ui.AppState import AppState
 from ui.FletUtils import playSound
-
-import csv
 
 WORDS_PER_GROUP = 4
 
@@ -26,7 +25,7 @@ def PersonalizeView(page: ft.Page, state: AppState):
         auto_scroll=True,
         height=page.height,
         on_reorder=lambda e: handle_reorder(e, state),
-        on_size_change= lambda e: handle_size_change(e)
+        on_size_change=lambda e: handle_size_change(e)
     )
 
     button_preview = ButtonSizePreview()
@@ -58,9 +57,9 @@ def PersonalizeView(page: ft.Page, state: AppState):
                             button_preview,
                             ft.Row(
                                 controls=[
-                                    ft.Button(content="Load CSV", on_click=loadCSV),
+                                    ft.Button(content="Load CSV", on_click=lambda _: page.run_task(loadCSV, page)),
                                     ft.Button(content="Save To CSV", on_click=lambda _: page.run_task(saveToCSV, state)),
-                                    ft.Button(content="Go Back to Main Menu", on_click=lambda _: page.run_task(page.push_route, "/WordExperiment"),
+                                    ft.Button(content="Go Back", on_click=lambda _: page.run_task(page.push_route, "/WordExperiment"),
                                               ),
                                 ],
                                 alignment=ft.MainAxisAlignment.SPACE_EVENLY
@@ -78,12 +77,34 @@ def PersonalizeView(page: ft.Page, state: AppState):
     )
 
 
-def loadCSV():
-    print("LoadCSV")
+async def loadCSV(page: ft.Page):
+    file_path = await ft.FilePicker().pick_files(allow_multiple=False)
+
+    if not file_path:
+        file_path = "src/experiments/wordExperiment/res/WordData.csv"
+    else:
+        file_path = file_path[0].path
+
+    """Load the specified CSV in state.word_groups"""
+    with open(file_path, newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+
+        first_row = True
+
+        for row in reader:
+            if first_row:
+                page.data.settings.max_time_to_choose = float(row[0])
+                page.data.settings.time_to_wait_between = float(row[1])
+                page.data.settings.buttons_size = float(row[2])
+                page.data.settings.gaze_per_second = float(row[3])
+                first_row = False
+            else:
+                page.data.word_groups.append(WordGroup(row[:4], row[4], row[5]))
+
+    await page.push_route("/WordExperiment")
 
 
 async def saveToCSV(state: AppState):
-
     fp = ft.FilePicker()
     file_path = await fp.save_file(dialog_title="Save File", file_name="word_experience.csv", file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=[".csv"])
 
@@ -94,8 +115,6 @@ async def saveToCSV(state: AppState):
 
         for word_group in state.word_groups:
             writer.writerow(word_group.words + [word_group.correct, word_group.sound])
-
-
 
 
 def handle_reorder(e: ft.OnReorderEvent, state: AppState):
@@ -114,12 +133,12 @@ def handle_reorder(e: ft.OnReorderEvent, state: AppState):
     e.control.controls = reordered_controls
     e.control.update()
 
+
 def handle_size_change(e):
     print("Old : " + str(e.height) + " | New  : " + str(e.height))
     print(e)
     e.control.height = e.page.window.height
     e.control.update()
-
 
 
 @ft.control
