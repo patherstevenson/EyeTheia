@@ -12,8 +12,6 @@ async def onWordExperiment(page: ft.Page):
 
 
 
-def onSettings():
-    print("Settings")
 
 
 def MainMenuView(page: ft.Page, state: AppState):
