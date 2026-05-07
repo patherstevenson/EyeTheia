@@ -1,13 +1,9 @@
 import asyncio
-import csv
 
 import flet as ft
 from experiments.wordExperiment.WordExperiment import WordExperiment
-from experiments.wordExperiment.WordGroup import WordGroup
-from flet.controls import alignment
 from playsound3 import playsound
 from ui.AppState import AppState
-from ui.FletUtils import loadCSV
 
 
 def WordExperimentView(page: ft.Page, state: AppState):
@@ -74,7 +70,6 @@ def WordExperimentView(page: ft.Page, state: AppState):
         current_words = exp.get_current_words()
 
         for word_index, button in enumerate(words):
-
             button.content.content.value = current_words[word_index]
 
         container.controls = [words_grid]

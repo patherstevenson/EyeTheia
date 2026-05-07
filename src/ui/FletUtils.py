@@ -1,16 +1,16 @@
-from ui.AppState import AppState
+import csv
+
+import flet as ft
 from experiments.wordExperiment.WordGroup import WordGroup
 from playsound3 import playsound
-import csv
-import flet as ft
+from ui.AppState import AppState
 
 
 async def playSound(path: str):
-    if(path.startswith("/")):
+    if (path.startswith("/")):
         playsound(path)
     else:
         playsound("src/experiments/wordExperiment/res/sounds/" + path)
-
 
 
 async def loadCSV(page: ft.Page):
@@ -21,6 +21,12 @@ async def loadCSV(page: ft.Page):
     else:
         file_path = file_path[0].path
 
+    await load_this_csv(page, file_path)
+
+    await page.push_route("/WordExperiment")
+
+
+async def load_this_csv(page: ft.Page, file_path: str):
     """Load the specified CSV in state.word_groups"""
     with open(file_path, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
@@ -36,8 +42,6 @@ async def loadCSV(page: ft.Page):
                 first_row = False
             else:
                 page.data.word_groups.append(WordGroup(row[:4], row[4], row[5]))
-
-    await page.push_route("/WordExperiment")
 
 
 async def saveToCSV(state: AppState):

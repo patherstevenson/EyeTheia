@@ -1,17 +1,10 @@
-import csv
-
 import flet as ft
-from experiments.wordExperiment.WordGroup import WordGroup
 from ui.AppState import AppState
 
 
 async def onWordExperiment(page: ft.Page):
     """Show WordExperiment View"""
     await page.push_route("/WordExperiment")
-
-
-
-
 
 
 def MainMenuView(page: ft.Page, state: AppState):

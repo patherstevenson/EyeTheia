@@ -76,7 +76,6 @@ def PersonalizeView(page: ft.Page, state: AppState):
     )
 
 
-
 def handle_reorder(e: ft.OnReorderEvent, state: AppState):
     word_groups = list(state.word_groups)
     moved_group = word_groups.pop(e.old_index)
@@ -146,12 +145,12 @@ class SoundPicker(ft.Container):
         self.update()
 
     async def choose_sound(self):
-
         file_path = await ft.FilePicker().pick_files(allow_multiple=False)
 
         if file_path:
             self.word_group.sound = file_path[0].path
         self.update_text()
+
 
 @ft.control
 class GroupCustomization(ft.Container):

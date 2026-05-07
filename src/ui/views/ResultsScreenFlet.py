@@ -1,5 +1,4 @@
 import csv
-import time
 
 import flet as ft
 import flet.canvas as cv
@@ -389,6 +388,4 @@ async def saveToCSV(results: list[GroupResults]):
             for pt in res.gaze_points:
                 points += str(pt) + ";"
 
-            writer.writerow(res.words.words + [res.words.correct,res.selected, str(res.total_time), points])
-
-
+            writer.writerow(res.words.words + [res.words.correct, res.selected, str(res.total_time), points])

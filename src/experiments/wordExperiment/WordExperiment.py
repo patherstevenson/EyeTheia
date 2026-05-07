@@ -1,11 +1,9 @@
+import asyncio
 import threading
 import time
 
 import GazeManager
 import mediapipe as mp
-import asyncio
-
-from experiments.wordExperiment import WordGroup
 from experiments.wordExperiment.GazePoint import GazePoint
 from experiments.wordExperiment.GroupResults import GroupResults
 from ui import AppState
@@ -56,7 +54,7 @@ class WordExperiment:
                 self.last_coords = (cx, cy)
                 self._listeners["coords"](cx, cy)
 
-                if (len(self.state.results) > 0 ) & ((time.time() - last_gaze * 1.0)>= (1 / self.state.settings.gaze_per_second)):
+                if (len(self.state.results) > 0) & ((time.time() - last_gaze * 1.0) >= (1 / self.state.settings.gaze_per_second)):
                     self.state.results[-1].gaze_score[self.get_button_index()] += 1
 
                     self.state.results[-1].gaze_points.append(GazePoint(len(self.state.results[-1].gaze_points), cx, cy))
@@ -83,31 +81,29 @@ class WordExperiment:
     def get_current_words(self):
         """Return actual words"""
         words = self.word_groups[len(self.state.results) - 1].words
-        if words is not None :
+        if words is not None:
             return words
         else:
             return []
-
 
     def get_current_sound(self):
         """Return actual words"""
         words = self.word_groups[len(self.state.results) - 1].sound
-        if words is not None :
+        if words is not None:
             return words
         else:
             return []
 
-
-    async def next_words(self, choosen = -1):
+    async def next_words(self, choosen=-1):
         """Show the next word group, and process result if given
         :param choosen : Chosen word in the previous group. If no word was clicked, chosen == -1. If first group, chosen == -2
         """
 
-        if(choosen >= 0):
+        if (choosen >= 0):
             # Any result given (no auto-skip or first group)
             self.state.results[-1].selected = choosen
 
-        if(len(self.word_groups) > len(self.state.results)):
+        if (len(self.word_groups) > len(self.state.results)):
             # Show next group
             new_index = len(self.state.results)
 
@@ -116,10 +112,8 @@ class WordExperiment:
             self._listeners["show_plus"]()
             await asyncio.sleep(self.state.settings.time_to_wait_between)
 
-
             new_word_group = self.word_groups[new_index]
-            self.state.results.append(GroupResults(new_word_group, new_word_group,choosen, total_time))
-
+            self.state.results.append(GroupResults(new_word_group, new_word_group, choosen, total_time))
 
             await self._listeners["show_word_group"]()
             self.last_group_date = time.time()
@@ -127,4 +121,3 @@ class WordExperiment:
 
         else:
             self._listeners["finish"]()
-

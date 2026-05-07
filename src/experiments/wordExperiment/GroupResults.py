@@ -1,4 +1,6 @@
-from experiments.wordExperiment import WordGroup, GazePoint
+from experiments.wordExperiment.WordGroup import WordGroup
+from experiments.wordExperiment.GazePoint import GazePoint
+
 
 
 class GroupResults:
