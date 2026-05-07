@@ -172,7 +172,7 @@ def handle_resize(e):
         x = round((pt.x / SCREEN_WIDTH) * canva_width)
         y = round((pt.y / SCREEN_HEIGHT) * canva_height)
         shapes.append(cv.Circle(x=x, y=y, radius=10, paint=stroke_paint))
-        shapes.append(cv.Text(x=x, y=y, value=str(pt.group_index), style=style, alignment=ft.Alignment.CENTER))
+        shapes.append(cv.Text(x=x, y=y, value=str(pt.index), style=style, alignment=ft.Alignment.CENTER))
         if (old_x >= 0 & old_y >= 0):
             shapes.append(cv.Line(paint=stroke_paint, x1=old_x, y1=old_y, x2=x, y2=y))
         old_x = x
