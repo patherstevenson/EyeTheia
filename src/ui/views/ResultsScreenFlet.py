@@ -7,6 +7,7 @@ from experiments.wordExperiment.GroupResults import GroupResults
 from experiments.wordExperiment.WordGroup import WordGroup
 from playsound3 import playsound
 from ui.AppState import AppState
+from ui.FletUtils import saveResultsToCSV, loadCSV
 from utils.config import SCREEN_HEIGHT, SCREEN_WIDTH
 
 
@@ -364,7 +365,11 @@ def ResultScreenView(page: ft.Page, state: AppState):
                 ),
                 ft.Button(
                     content="Save to CSV",
-                    on_click=lambda _: page.run_task(saveToCSV, state.results)
+                    on_click=lambda _: page.run_task(saveResultsToCSV, state)
+                ),
+                ft.Button(
+                    content="Load CSV",
+                    on_click=lambda _: page.run_task(loadCSV, page)
                 ),
 
             ]),
@@ -373,19 +378,3 @@ def ResultScreenView(page: ft.Page, state: AppState):
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
         # scroll=ft.ScrollMode.AUTO
     )
-
-
-async def saveToCSV(results: list[GroupResults]):
-    fp = ft.FilePicker()
-    file_path = await fp.save_file(dialog_title="Save File", file_name="word_experiment_results.csv", file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=[".csv"])
-
-    with(open(file_path, 'w', newline='')) as csvfile:
-        writer = csv.writer(csvfile, delimiter=',')
-
-        for res in results:
-            points = ""
-
-            for pt in res.gaze_points:
-                points += str(pt) + ";"
-
-            writer.writerow(res.words.words + [res.words.correct, res.selected, str(res.total_time), points])

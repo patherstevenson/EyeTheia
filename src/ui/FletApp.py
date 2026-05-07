@@ -4,6 +4,7 @@ from experiments.wordExperiment.WordGroup import WordGroup
 from ui.AppSettings import WordExperimentSettings
 from ui.AppState import AppState
 from ui.views.DraggableTestView import DraggableTestView
+from ui.views.HeatMapTests import HeatMapView
 from ui.views.MainMenuFlet import MainMenuView
 from ui.views.PersonalizeFlet import PersonalizeView
 from ui.views.ResultsScreenFlet import ResultScreenView
@@ -50,6 +51,8 @@ async def main(page: ft.Page):
                 page.views.append(PersonalizeView(page, state))
             case "/DragTest":
                 page.views.append(DraggableTestView(page, state))
+            case "/HeatMap":
+                page.views.append(HeatMapView(page, state))
             case _:
                 page.views.append(ft.View(controls=ft.Column(controls=[
                     ft.Text("No page found"), ft.Button(content="Go Back to Main Menu",
@@ -62,3 +65,4 @@ async def main(page: ft.Page):
     page.on_route_change = route_change
 
     page.views.append(MainMenuView(page, state))
+    # page.views.append(HeatMapView(page, state))

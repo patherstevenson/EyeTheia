@@ -5,7 +5,7 @@ import flet as ft
 from experiments.wordExperiment.WordGroup import WordGroup
 from ui.AppSettings import AppSettingsEnum
 from ui.AppState import AppState
-from ui.FletUtils import playSound, loadCSV, saveToCSV
+from ui.FletUtils import playSound, loadCSV, saveExperienceToCSV
 
 WORDS_PER_GROUP = 4
 
@@ -57,7 +57,7 @@ def PersonalizeView(page: ft.Page, state: AppState):
                             ft.Row(
                                 controls=[
                                     ft.Button(content="Load CSV", on_click=lambda _: page.run_task(loadCSV, page)),
-                                    ft.Button(content="Save To CSV", on_click=lambda _: page.run_task(saveToCSV, state)),
+                                    ft.Button(content="Save To CSV", on_click=lambda _: page.run_task(saveExperienceToCSV, state)),
                                     ft.Button(content="Go Back", on_click=lambda _: page.run_task(page.push_route, "/WordExperiment"),
                                               ),
                                 ],
