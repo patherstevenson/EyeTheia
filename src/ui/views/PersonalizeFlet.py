@@ -313,6 +313,9 @@ class AppSettingsWidget(ft.Container):
         self.value_picker.update_shown()
         self.update()
 
+        for ctrl in self.to_update:
+            ctrl.update()
+
 
 @ft.control
 class NumberPicker(ft.Row):
