@@ -1,4 +1,3 @@
-from dataclasses import field
 from typing import Callable
 
 import flet as ft
@@ -29,6 +28,29 @@ def PersonalizeView(page: ft.Page, state: AppState):
 
     button_preview = ButtonSizePreview()
 
+    max_time_to_choose = AppSettingsWidget(
+        setting=AppSettingsEnum.MAX_TIME_TO_CHOOSE,
+        value_picker=NumberPicker(),
+        description="Maximum time to chose a word",
+        data=page.data.settings)
+    time_between = AppSettingsWidget(
+        setting=AppSettingsEnum.TIME_TO_WAIT_BETWEEN,
+        value_picker=NumberPicker(step=0.5),
+        description="Time to wait between 2 word groups",
+        data=page.data.settings)
+    gaze_per_second = AppSettingsWidget(
+        setting=AppSettingsEnum.GAZE_PER_SECOND,
+        value_picker=NumberPicker(step=1),
+        description="Number of gaze the app will try to make avery second",
+        data=page.data.settings)
+    button_size = AppSettingsWidget(
+        setting=AppSettingsEnum.BUTTONS_SIZE,
+        value_picker=SliderPicker(),
+        description="Size of the buttons",
+        data=page.data.settings,
+        to_update=[button_preview]
+    )
+
     return ft.View(
         controls=[
             ft.Row(
@@ -37,22 +59,10 @@ def PersonalizeView(page: ft.Page, state: AppState):
                     ft.VerticalDivider(),
                     ft.Column(
                         controls=[
-                            AppSettingsWidget(setting=AppSettingsEnum.MAX_TIME_TO_CHOOSE,
-                                              value_picker=NumberPicker(),
-                                              description="Maximum time to chose a word",
-                                              data=page.data.settings),
-                            AppSettingsWidget(setting=AppSettingsEnum.TIME_TO_WAIT_BETWEEN,
-                                              value_picker=NumberPicker(step=0.5),
-                                              description="Time to wait between 2 word groups",
-                                              data=page.data.settings),
-                            AppSettingsWidget(setting=AppSettingsEnum.GAZE_PER_SECOND,
-                                              value_picker=NumberPicker(step=1),
-                                              description="Number of gaze the app will try to make avery second",
-                                              data=page.data.settings),
-                            AppSettingsWidget(setting=AppSettingsEnum.BUTTONS_SIZE,
-                                              value_picker=SliderPicker(),
-                                              description="Size of the buttons",
-                                              data=page.data.settings),
+                            max_time_to_choose,
+                            time_between,
+                            gaze_per_second,
+                            button_size,
                             button_preview,
                             ft.Row(
                                 controls=[
@@ -100,9 +110,11 @@ def handle_size_change(e):
 
 @ft.control
 class CorrectAnswerDropdown(ft.Dropdown):
-    word_group: WordGroup = None
 
-    def init(self):
+    def __init__(self, word_group: WordGroup, **kwargs):
+        self.word_group = word_group
+        super().__init__(**kwargs)
+
         self.options = [
             ft.DropdownOption(key=word, text=word)
             for word in self.word_group.words
@@ -118,11 +130,12 @@ class CorrectAnswerDropdown(ft.Dropdown):
 class SoundPicker(ft.Container):
     """Display the selected sound and allow replaying it."""
 
-    word_group: WordGroup = None
+    def __init__(self, word_group: WordGroup, **kwargs):
+        super().__init__(content=None, **kwargs)
 
-    def init(self):
+        self.word_group = word_group
         self.buttons = [
-            ft.Button(content=self.word_group.sound),
+            ft.Button(content=word_group.sound),
             ft.IconButton(
                 icon=ft.Icons.PLAY_ARROW,
                 icon_color=ft.Colors.BLUE,
@@ -156,22 +169,29 @@ class SoundPicker(ft.Container):
 class GroupCustomization(ft.Container):
     """Widget used to edit one WordGroup."""
 
-    group_index: int = -1
-    word_group: WordGroup = None
+    def __init__(self, group_index: int, word_group: WordGroup, **kwargs):
+        self.group_index: int = group_index
+        self.word_group: WordGroup = word_group
 
-    def init(self):
+        super().__init__(**kwargs)
+
         self.expand = True
         self.padding = 10
         self.margin = ft.Margin.symmetric(vertical=2.5)
         self.border = ft.Border.all(3, ft.Colors.BLUE_ACCENT)
         self.border_radius = ft.BorderRadius.all(5)
+
+        self.word_picker = WordPicker(word_group=self.word_group)
+        self.sound_picker = SoundPicker(word_group=self.word_group)
+        self.correct_answer_dropdown = CorrectAnswerDropdown(word_group=self.word_group)
+
         self.content = ft.Row(
             controls=[
-                WordPicker(word_group=self.word_group),
+                self.word_picker,
                 ft.Column(
                     controls=[
-                        SoundPicker(word_group=self.word_group),
-                        CorrectAnswerDropdown(word_group=self.word_group),
+                        self.sound_picker,
+                        self.correct_answer_dropdown,
                     ]
                 ),
                 ft.ReorderableDragHandle(
@@ -187,9 +207,11 @@ class GroupCustomization(ft.Container):
 class WordPicker(ft.Column):
     """Display a 2x2 editable grid for one WordGroup."""
 
-    word_group: WordGroup = None
+    def __init__(self, word_group: WordGroup, **kwargs):
+        super().__init__(controls=None, **kwargs)
 
-    def init(self):
+        self.word_group = word_group
+
         self.expand = True
         self.validate_words()
         self.build_grid()
@@ -227,7 +249,7 @@ class WordPicker(ft.Column):
 
 @ft.control
 class DragTile(ft.DragTarget):
-    def __init__(self, word: str, index: int, on_swap, on_change):
+    def __init__(self, word: str, index: int, on_swap, on_change, **kwargs):
         text_field = ft.TextField(
             value=word,
             on_change=lambda e, tile_index=index: on_change(tile_index, e.control.value),
@@ -246,18 +268,25 @@ class DragTile(ft.DragTarget):
             data=index,
         )
 
-        super().__init__(content=content, on_accept=on_swap, data=index, expand=True)
+        super().__init__(content=content, **kwargs)
+        self.content = content
+        self.on_accept = on_swap
+        self.data = index
+        self.expand = True
 
 
 @ft.control
 class AppSettingsWidget(ft.Container):
     """The widget used to modify any parameter in AppSettings. Store the reference of the AppSettings in his Data attribute."""
-    setting: AppSettingsEnum = None
-    value_picker: ft.Control = None
-    description: str = ""
-    bound: list[ft.Control] = field(default_factory=list)
 
-    def init(self):
+    def __init__(self, setting: AppSettingsEnum, value_picker: ft.Control, description: str, to_update: list[ft.Control] = [], **kwargs):
+        self.setting = setting
+        self.value_picker = value_picker
+        self.description = description
+        self.to_update = to_update
+
+        super().__init__(**kwargs)
+
         value = getattr(self.data, self.setting.value)
         self.value_picker.value = value
         self.value_picker.set_value(value)
@@ -274,7 +303,7 @@ class AppSettingsWidget(ft.Container):
 
     def update_intern_value(self, e, new_value=None):
         """Updates the value in the App setting and in the Picker Object"""
-        if (new_value == None):
+        if new_value == None:
             if new_value == "":
                 new_value = 0.0
             else:
@@ -287,14 +316,13 @@ class AppSettingsWidget(ft.Container):
 
 @ft.control
 class NumberPicker(ft.Row):
-    setting: AppSettingsEnum = None
-    value: str = "0"
-    step: float = 1.0
 
-    def set_value_updater(self, method: Callable):
-        self.text_field.on_change = method
+    def __init__(self, step: float = 1.0, **kwargs):
+        super().__init__(**kwargs)
 
-    def init(self):
+        self.step = step
+        self.value = "0"
+
         self.text_field = ft.TextField(value=self.value,
                                        keyboard_type=ft.KeyboardType.NUMBER,
                                        input_filter=ft.InputFilter(allow=True, regex_string=r"^(\d+\.)?\d*$", replacement_string=""),
@@ -310,11 +338,14 @@ class NumberPicker(ft.Row):
 
         self.alignment = ft.MainAxisAlignment.SPACE_BETWEEN
 
+    def set_value_updater(self, method: Callable):
+        self.text_field.on_change = method
+
     def button_up(self, e):
-        self.text_field.on_change(e, self.value + self.step)
+        self.text_field.on_change(e, float(self.value) + self.step)
 
     def button_down(self, e):
-        self.text_field.on_change(e, self.value - self.step)
+        self.text_field.on_change(e, float(self.value) - self.step)
 
     def set_value(self, value):
         self.value = value
@@ -329,14 +360,15 @@ class NumberPicker(ft.Row):
 
 @ft.control
 class SliderPicker(ft.Row):
-    setting: AppSettingsEnum = None
-    value: float = 0.0
 
     def set_value_updater(self, method: Callable):
         self.slider.on_change = method
         self.text_field.on_change = method
 
-    def init(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.value = 0.0
+
         self.built = False
         self.slider = ft.Slider(value=self.value)
         self.text_field = ft.TextField(value=str(self.value),
@@ -367,16 +399,18 @@ class SliderPicker(ft.Row):
         self.text_field.value = str(self.value)
         if (self.built):
             self.update()
-            self.parent.parent.update()
+            print(self.parent)
+            self.parent.update()
 
 
 @ft.control
 class ButtonSizePreview(ft.Container):
-    size: float = 0.5
 
-    def init(self):
+    def __init__(self, size: float = 0.5, **kwargs):
+        super().__init__(**kwargs)
+        self.size = size
+
         self.aspect_ratio = 16 / 9
-
         self.buttons = [
             ft.Container(
                 content=ft.Button(content=content),

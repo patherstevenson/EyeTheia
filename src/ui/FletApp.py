@@ -3,7 +3,6 @@ from GazeManager import GazeManager
 from experiments.wordExperiment.WordGroup import WordGroup
 from ui.AppSettings import WordExperimentSettings
 from ui.AppState import AppState
-from ui.views.DraggableTestView import DraggableTestView
 from ui.views.HeatMapTests import HeatMapView
 from ui.views.MainMenuFlet import MainMenuView
 from ui.views.PersonalizeFlet import PersonalizeView
@@ -49,8 +48,6 @@ async def main(page: ft.Page):
                 page.views.append(ResultScreenView(page, state))
             case "/Personalize":
                 page.views.append(PersonalizeView(page, state))
-            case "/DragTest":
-                page.views.append(DraggableTestView(page, state))
             case "/HeatMap":
                 page.views.append(HeatMapView(page, state))
             case _:
