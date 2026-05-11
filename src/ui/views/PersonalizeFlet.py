@@ -30,17 +30,17 @@ def PersonalizeView(page: ft.Page, state: AppState):
 
     max_time_to_choose = AppSettingsWidget(
         setting=AppSettingsEnum.MAX_TIME_TO_CHOOSE,
-        value_picker=NumberPicker(),
+        value_picker=NumberPicker(minimum=0),
         description="Maximum time to chose a word",
         data=page.data.settings)
     time_between = AppSettingsWidget(
         setting=AppSettingsEnum.TIME_TO_WAIT_BETWEEN,
-        value_picker=NumberPicker(step=0.5),
+        value_picker=NumberPicker(step=0.5, minimum=0),
         description="Time to wait between 2 word groups",
         data=page.data.settings)
     gaze_per_second = AppSettingsWidget(
         setting=AppSettingsEnum.GAZE_PER_SECOND,
-        value_picker=NumberPicker(step=1),
+        value_picker=NumberPicker(step=1, minimum=0),
         description="Number of gaze the app will try to make avery second",
         data=page.data.settings)
     button_size = AppSettingsWidget(
@@ -320,10 +320,11 @@ class AppSettingsWidget(ft.Container):
 @ft.control
 class NumberPicker(ft.Row):
 
-    def __init__(self, step: float = 1.0, **kwargs):
+    def __init__(self, step: float = 1.0, minimum: float = None, **kwargs):
         super().__init__(**kwargs)
 
         self.step = step
+        self.minimum = minimum
         self.value = "0"
 
         self.text_field = ft.TextField(value=self.value,
@@ -345,10 +346,18 @@ class NumberPicker(ft.Row):
         self.text_field.on_change = method
 
     def button_up(self, e):
-        self.text_field.on_change(e, float(self.value) + self.step)
+        new_val = float(self.value) + self.step
+        if self.minimum is not None:
+            if new_val < self.minimum:
+                return
+        self.text_field.on_change(e, new_val)
 
     def button_down(self, e):
-        self.text_field.on_change(e, float(self.value) - self.step)
+        new_val = float(self.value) - self.step
+        if self.minimum is not None:
+            if new_val < self.minimum:
+                return
+        self.text_field.on_change(e, new_val)
 
     def set_value(self, value):
         self.value = value
