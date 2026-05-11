@@ -54,11 +54,14 @@ class WordExperiment:
                 self.last_coords = (cx, cy)
                 self._listeners["coords"](cx, cy)
 
-                if (len(self.state.results) > 0) & ((time.time() - last_gaze * 1.0) >= (1 / self.state.settings.gaze_per_second)):
-                    self.state.results[-1].gaze_score[self.get_button_index()] += 1
+                if(self.state.settings.gaze_per_second != 0):
+                    to_wait_between_gaze = (1 / self.state.settings.gaze_per_second)
 
-                    self.state.results[-1].gaze_points.append(GazePoint(len(self.state.results[-1].gaze_points), cx, cy))
-                    last_gaze = time.time()
+                    if (len(self.state.results) > 0) & ((time.time() - last_gaze * 1.0) >= to_wait_between_gaze):
+                        self.state.results[-1].gaze_score[self.get_button_index()] += 1
+
+                        self.state.results[-1].gaze_points.append(GazePoint(len(self.state.results[-1].gaze_points), cx, cy))
+                        last_gaze = time.time()
 
                 if (time.time() - self.last_group_date >= self.state.settings.max_time_to_choose):
                     await self.next_words()
