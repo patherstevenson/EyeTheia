@@ -25,10 +25,6 @@ def MainMenuView(page: ft.Page, state: AppState):
             content="Personalize",
             on_click=lambda _: page.run_task(page.push_route, "/Personalize")
         ),
-        ft.Button(
-            content="DraggableTest",
-            on_click=lambda _: page.run_task(page.push_route, "/DragTest")
-        ),
     ]
     column = ft.Column(
         controls=buttons,

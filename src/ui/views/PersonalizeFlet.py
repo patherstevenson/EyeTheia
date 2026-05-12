@@ -60,8 +60,8 @@ def PersonalizeView(page: ft.Page, state: AppState):
                 controls=[
                     ft.Column(
                         controls=[
-                            reorderable_list,
                             AddGroupWidget(update_callback=update_list_controls),
+                            reorderable_list,
                         ],
                         expand=True
                     ),
@@ -118,12 +118,13 @@ def handle_size_change(e):
 
 
 @ft.control
-class AddGroupWidget(ft.Button):
+class AddGroupWidget(ft.IconButton):
     def __init__(self, update_callback, **kwargs):
         self.update_callback = update_callback
         super().__init__(**kwargs)
         self.on_click = self.handle_click
-        self.content = "Add"
+        self.icon = ft.Icons.ADD_BOX
+        self.icon_color=ft.Colors.BLUE
 
     def handle_click(self, e):
         self.page.data.word_groups.append(WordGroup())
@@ -465,7 +466,6 @@ class SliderPicker(ft.Row):
         self.text_field.value = str(self.value)
         if (self.built):
             self.update()
-            print(self.parent)
             self.parent.update()
 
 

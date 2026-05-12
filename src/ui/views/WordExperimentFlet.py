@@ -112,7 +112,7 @@ def WordExperimentView(page: ft.Page, state: AppState):
     container.controls = [
         ft.Column(
             controls=[
-                ft.Text("Before Starting : ", weight=ft.FontWeight.W_900),
+                ft.Text("Before Starting : ", weight=ft.FontWeight.W_900, size = 12),
                 ft.Row(
                     controls=[
                         ft.Button(
