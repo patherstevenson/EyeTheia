@@ -51,11 +51,20 @@ def PersonalizeView(page: ft.Page, state: AppState):
         to_update=[button_preview]
     )
 
+    def update_list_controls():
+        reorderable_list.controls = [GroupCustomization(group_index=index, word_group=group) for index, group in enumerate(state.word_groups)]
+
     return ft.View(
         controls=[
             ft.Row(
                 controls=[
-                    reorderable_list,
+                    ft.Column(
+                        controls=[
+                            reorderable_list,
+                            AddGroupWidget(update_callback=update_list_controls),
+                        ],
+                        expand=True
+                    ),
                     ft.VerticalDivider(),
                     ft.Column(
                         controls=[
@@ -106,6 +115,19 @@ def handle_reorder(e: ft.OnReorderEvent, state: AppState):
 def handle_size_change(e):
     e.control.height = e.page.window.height
     e.control.update()
+
+
+@ft.control
+class AddGroupWidget(ft.Button):
+    def __init__(self, update_callback, **kwargs):
+        self.update_callback = update_callback
+        super().__init__(**kwargs)
+        self.on_click = self.handle_click
+        self.content = "Add"
+
+    def handle_click(self, e):
+        self.page.data.word_groups.append(WordGroup())
+        self.update_callback()
 
 
 @ft.control
@@ -212,7 +234,7 @@ class GroupCustomization(ft.Container):
                     controls=[
                         self.sound_picker,
                         ft.Row(
-                            controls = [
+                            controls=[
                                 ft.Text("Correct Answer : "),
                                 self.correct_answer_dropdown,
 
@@ -223,7 +245,7 @@ class GroupCustomization(ft.Container):
                 ft.ReorderableDragHandle(
                     content=ft.Icon(ft.Icons.DRAG_INDICATOR, color=ft.Colors.BLUE),
                     expand=1,
-                    mouse_cursor = ft.MouseCursor.GRAB,
+                    mouse_cursor=ft.MouseCursor.GRAB,
                 ),
             ],
             expand=1,
@@ -305,7 +327,6 @@ class DragTile(ft.DragTarget):
         self.on_accept = on_swap
         self.data = index
         self.expand = True
-
 
 
 @ft.control
