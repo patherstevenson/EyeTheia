@@ -161,7 +161,10 @@ class SoundPicker(ft.Container):
         self.content = ft.Row(
             controls=self.buttons
         )
-        self.border = ft.Border.all(2, ft.Colors.GREY)
+        self.border = ft.Border.all(1, ft.Colors.GREY)
+        self.border_radius = ft.BorderRadius.all(15)
+
+        self.padding = ft.Padding.all(5)
 
     def build(self):
         self.buttons[0].on_click = lambda _: self.page.run_task(self.choose_sound)
@@ -208,12 +211,19 @@ class GroupCustomization(ft.Container):
                 ft.Column(
                     controls=[
                         self.sound_picker,
-                        self.correct_answer_dropdown,
+                        ft.Row(
+                            controls = [
+                                ft.Text("Correct Answer : "),
+                                self.correct_answer_dropdown,
+
+                            ]
+                        )
                     ]
                 ),
                 ft.ReorderableDragHandle(
                     content=ft.Icon(ft.Icons.DRAG_INDICATOR, color=ft.Colors.BLUE),
                     expand=1,
+                    mouse_cursor = ft.MouseCursor.GRAB,
                 ),
             ],
             expand=1,
@@ -295,6 +305,7 @@ class DragTile(ft.DragTarget):
         self.on_accept = on_swap
         self.data = index
         self.expand = True
+
 
 
 @ft.control
