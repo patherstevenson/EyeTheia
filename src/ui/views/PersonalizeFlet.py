@@ -41,7 +41,7 @@ def PersonalizeView(page: ft.Page, state: AppState):
     gaze_per_second = AppSettingsWidget(
         setting=AppSettingsEnum.GAZE_PER_SECOND,
         value_picker=NumberPicker(step=1, minimum=0),
-        description="Number of gaze the app will try to make avery second",
+        description="Number of gaze the app will try to make every second",
         data=page.data.settings)
     button_size = AppSettingsWidget(
         setting=AppSettingsEnum.BUTTONS_SIZE,
@@ -119,11 +119,28 @@ class CorrectAnswerDropdown(ft.Dropdown):
             ft.DropdownOption(key=word, text=word)
             for word in self.word_group.words
         ]
-        self.value = self.word_group.correct
+        self.value: str = self.word_group.correct
+
+        val = self.word_group.words.index(self.value)
+
+        if val is not None:
+            self.index = val
+        else:
+            self.index = -1
+
         self.on_select = self.handle_select
 
     def handle_select(self, e):
         self.word_group.correct = e.control.value
+        self.index = self.word_group.words.index(e.control.value)
+
+    def update_list(self):
+        self.options = [
+            ft.DropdownOption(key=word, text=word)
+            for word in self.word_group.words
+        ]
+        self.value = self.word_group.words[self.index]
+        self.word_group.correct = self.value
 
 
 @ft.control
@@ -181,7 +198,7 @@ class GroupCustomization(ft.Container):
         self.border = ft.Border.all(3, ft.Colors.BLUE_ACCENT)
         self.border_radius = ft.BorderRadius.all(5)
 
-        self.word_picker = WordPicker(word_group=self.word_group)
+        self.word_picker = WordPicker(on_word_change=self.update_correct_dropdown, word_group=self.word_group)
         self.sound_picker = SoundPicker(word_group=self.word_group)
         self.correct_answer_dropdown = CorrectAnswerDropdown(word_group=self.word_group)
 
@@ -202,12 +219,15 @@ class GroupCustomization(ft.Container):
             expand=1,
         )
 
+    def update_correct_dropdown(self):
+        self.correct_answer_dropdown.update_list()
+
 
 @ft.control
 class WordPicker(ft.Column):
     """Display a 2x2 editable grid for one WordGroup."""
 
-    def __init__(self, word_group: WordGroup, **kwargs):
+    def __init__(self, on_word_change, word_group: WordGroup, **kwargs):
         super().__init__(controls=None, **kwargs)
 
         self.word_group = word_group
@@ -215,6 +235,7 @@ class WordPicker(ft.Column):
         self.expand = True
         self.validate_words()
         self.build_grid()
+        self.on_word_change = on_word_change
 
     def validate_words(self):
         if len(self.word_group.words) != WORDS_PER_GROUP:
@@ -245,6 +266,7 @@ class WordPicker(ft.Column):
 
     def handle_change_word(self, word_index: int, new_word: str):
         self.word_group.words[word_index] = new_word
+        self.on_word_change()
 
 
 @ft.control
