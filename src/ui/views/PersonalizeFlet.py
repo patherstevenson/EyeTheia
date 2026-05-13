@@ -11,20 +11,24 @@ WORDS_PER_GROUP = 4
 
 def PersonalizeView(page: ft.Page, state: AppState):
     """Build the screen used to customize word groups."""
-    group_list = [
-        GroupCustomization(group_index=index, word_group=group)
-        for index, group in enumerate(state.word_groups)
-    ]
 
     reorderable_list = ft.ReorderableListView(
         show_default_drag_handles=False,
-        controls=group_list,
+        controls=[],
         expand=1,
         auto_scroll=True,
         height=page.height,
         on_reorder=lambda e: handle_reorder(e, state),
         on_size_change=lambda e: handle_size_change(e)
     )
+
+    def update_list_controls():
+        reorderable_list.controls = [
+            GroupCustomization(group_index=index, word_group=group, update_callback = update_list_controls)
+            for index, group in enumerate(state.word_groups)
+        ]
+
+    update_list_controls()
 
     button_preview = ButtonSizePreview()
 
@@ -50,9 +54,6 @@ def PersonalizeView(page: ft.Page, state: AppState):
         data=page.data.settings,
         to_update=[button_preview]
     )
-
-    def update_list_controls():
-        reorderable_list.controls = [GroupCustomization(group_index=index, word_group=group) for index, group in enumerate(state.word_groups)]
 
     return ft.View(
         controls=[
@@ -124,10 +125,25 @@ class AddGroupWidget(ft.IconButton):
         super().__init__(**kwargs)
         self.on_click = self.handle_click
         self.icon = ft.Icons.ADD_BOX
-        self.icon_color=ft.Colors.BLUE
+        self.icon_color = ft.Colors.BLUE
 
     def handle_click(self, e):
         self.page.data.word_groups.append(WordGroup())
+        self.update_callback()
+
+
+@ft.control
+class RemoveGroupWidget(ft.IconButton):
+    def __init__(self, group_index, update_callback, **kwargs):
+        self.update_callback = update_callback
+        self.group_index = group_index
+        super().__init__(**kwargs)
+        self.on_click = self.handle_click
+        self.icon = ft.Icons.DELETE
+        self.icon_color = ft.Colors.RED
+
+    def handle_click(self, e):
+        self.page.data.word_groups.pop(self.group_index)
         self.update_callback()
 
 
@@ -212,9 +228,10 @@ class SoundPicker(ft.Container):
 class GroupCustomization(ft.Container):
     """Widget used to edit one WordGroup."""
 
-    def __init__(self, group_index: int, word_group: WordGroup, **kwargs):
+    def __init__(self, group_index: int, word_group: WordGroup, update_callback, **kwargs):
         self.group_index: int = group_index
         self.word_group: WordGroup = word_group
+        self.update_callback = update_callback
 
         super().__init__(**kwargs)
 
@@ -243,17 +260,26 @@ class GroupCustomization(ft.Container):
                         )
                     ]
                 ),
-                ft.ReorderableDragHandle(
-                    content=ft.Icon(ft.Icons.DRAG_INDICATOR, color=ft.Colors.BLUE),
-                    expand=1,
-                    mouse_cursor=ft.MouseCursor.GRAB,
-                ),
+                ft.Column(controls=[
+                    RemoveGroupWidget(group_index=group_index, update_callback=self.update_callback),
+                    ft.ReorderableDragHandle(
+                        content=ft.Icon(ft.Icons.DRAG_INDICATOR, color=ft.Colors.BLUE),
+                        mouse_cursor=ft.MouseCursor.GRAB,
+                    ),
+                ],
+                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    tight=True,
+                )
             ],
             expand=1,
         )
 
     def update_correct_dropdown(self):
         self.correct_answer_dropdown.update_list()
+
+    def remove_word_group(self):
+        self.page.data.word_groups.remove(self.word_group)
 
 
 @ft.control
