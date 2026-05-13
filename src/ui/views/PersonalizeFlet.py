@@ -12,21 +12,30 @@ WORDS_PER_GROUP = 4
 def PersonalizeView(page: ft.Page, state: AppState):
     """Build the screen used to customize word groups."""
 
+    def handle_size_change(e):
+        e.control.height = e.page.window.height
+        e.control.update()
+
+    def handle_reorder(e: ft.OnReorderEvent, state: AppState, update_callback):
+        moved_group = state.word_groups.pop(e.old_index)
+        state.word_groups.insert(e.new_index, moved_group)
+
+        update_callback()
+
     reorderable_list = ft.ReorderableListView(
         show_default_drag_handles=False,
         controls=[],
         expand=1,
         auto_scroll=True,
         height=page.height,
-        on_reorder=lambda e: handle_reorder(e, state),
+        on_reorder=lambda e: handle_reorder(e, state, update_list_controls),
         on_size_change=lambda e: handle_size_change(e)
     )
 
     def update_list_controls():
-        reorderable_list.controls = [
-            GroupCustomization(group_index=index, word_group=group, update_callback = update_list_controls)
-            for index, group in enumerate(state.word_groups)
-        ]
+        reorderable_list.controls = []
+        for index, group in enumerate(state.word_groups):
+            reorderable_list.controls.append(GroupCustomization(group_index=index, word_group=group, update_callback=update_list_controls))
 
     update_list_controls()
 
@@ -96,28 +105,6 @@ def PersonalizeView(page: ft.Page, state: AppState):
     )
 
 
-def handle_reorder(e: ft.OnReorderEvent, state: AppState):
-    word_groups = list(state.word_groups)
-    moved_group = word_groups.pop(e.old_index)
-    word_groups.insert(e.new_index, moved_group)
-    state.set_word_groups(word_groups)
-
-    reordered_controls = list(e.control.controls)
-    moved_control = reordered_controls.pop(e.old_index)
-    reordered_controls.insert(e.new_index, moved_control)
-
-    for index, control in enumerate(reordered_controls):
-        control.group_index = index
-
-    e.control.controls = reordered_controls
-    e.control.update()
-
-
-def handle_size_change(e):
-    e.control.height = e.page.window.height
-    e.control.update()
-
-
 @ft.control
 class AddGroupWidget(ft.IconButton):
     def __init__(self, update_callback, **kwargs):
@@ -154,32 +141,28 @@ class CorrectAnswerDropdown(ft.Dropdown):
         self.word_group = word_group
         super().__init__(**kwargs)
 
-        self.options = [
-            ft.DropdownOption(key=word, text=word)
-            for word in self.word_group.words
-        ]
-        self.value: str = self.word_group.correct
+        self.options = []
 
-        val = self.word_group.words.index(self.value)
+        for index, word in enumerate(self.word_group.words):
+            self.options.append(ft.DropdownOption(key=str(index), text=word))
 
-        if val is not None:
-            self.index = val
-        else:
-            self.index = -1
+
+        self.index: int = word_group.words.index(self.word_group.correct)
+
+        self.value = str(self.index)
 
         self.on_select = self.handle_select
 
     def handle_select(self, e):
-        self.word_group.correct = e.control.value
-        self.index = self.word_group.words.index(e.control.value)
+        self.word_group.correct = self.word_group.words[int(e.control.value)]
+        self.index = int(e.control.value)
 
     def update_list(self):
-        self.options = [
-            ft.DropdownOption(key=word, text=word)
-            for word in self.word_group.words
-        ]
-        self.value = self.word_group.words[self.index]
-        self.word_group.correct = self.value
+        self.options = []
+        for index, word in enumerate(self.word_group.words):
+            self.options.append(ft.DropdownOption(key=str(index), text=word))
+        self.word_group.correct = self.word_group.words[self.index]
+        self.update()
 
 
 @ft.control

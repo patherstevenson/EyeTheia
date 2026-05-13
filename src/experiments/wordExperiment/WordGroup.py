@@ -7,8 +7,11 @@ class WordGroup:
     correct: str = ""
     sound: str = ""
 
-    def __init__(self, words : list[str] = ["","","",""], correct : str = "", sound : str = ""):
-        self.words = words
+    def __init__(self, words: list[str] = None, correct: str = "", sound: str = ""):
+        if words is not None:
+            self.words = words
+        else:
+            self.words = ["", "", "", ""]
         self.correct = correct
         self.sound = sound
 
@@ -19,3 +22,6 @@ class WordGroup:
         csv_str += self.sound
 
         return csv_str
+
+    def __str__(self):
+        return str(self.words) + " | " + self.sound + " | " + self.correct
