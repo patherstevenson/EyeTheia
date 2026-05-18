@@ -44,6 +44,8 @@ async def load_this_csv(page: ft.Page, file_path: str):
                     page.data.settings.time_to_wait_between = float(row[2])
                     page.data.settings.buttons_size = float(row[3])
                     page.data.settings.gaze_per_second = float(row[4])
+
+                    page.data.word_groups = []
                 elif row[0] == "result_index":
                     file_type = "results"
                     page.data.results = []

@@ -2,7 +2,7 @@ import asyncio
 
 import flet as ft
 from experiments.wordExperiment.WordExperiment import WordExperiment
-from playsound3 import playsound
+from ui.FletUtils import playSound
 from ui.AppState import AppState
 
 
@@ -74,10 +74,10 @@ def WordExperimentView(page: ft.Page, state: AppState):
 
         container.controls = [words_grid]
         page.update()
-        playsound("src/experiments/wordExperiment/res/sounds/" + exp.get_current_sound())
+        await playSound(exp.get_current_sound())
 
-    exp._listeners["show_plus"] = show_plus
-    exp._listeners["show_word_group"] = show_word_group
+    exp.listeners["show_plus"] = show_plus
+    exp.listeners["show_word_group"] = show_word_group
 
     queue = asyncio.Queue()
     ui_loop = asyncio.get_running_loop()

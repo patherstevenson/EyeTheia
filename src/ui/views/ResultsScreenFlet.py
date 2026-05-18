@@ -3,9 +3,8 @@ import flet.canvas as cv
 from experiments.wordExperiment.GazePoint import GazePoint
 from experiments.wordExperiment.GroupResults import GroupResults
 from experiments.wordExperiment.WordGroup import WordGroup
-from playsound3 import playsound
 from ui.AppState import AppState
-from ui.FletUtils import saveResultsToCSV, loadCSV
+from ui.FletUtils import saveResultsToCSV, loadCSV, playSound
 from utils.config import SCREEN_HEIGHT, SCREEN_WIDTH
 
 
@@ -40,7 +39,7 @@ def tabWidget(data, size, font: ft.FontWeight, spacing, border_width, border_col
     )
 
 
-def data_widget(res):
+def data_widget(res, page: ft.Page):
     # Data
     return ft.Column(
         controls=[
@@ -52,19 +51,19 @@ def data_widget(res):
                             icon=ft.Icons.PLAY_ARROW,
                             icon_color=ft.Colors.BLUE,
                             icon_size=40,
-                            on_click=lambda _: playsound("src/experiments/wordExperiment/res/sounds/" + res.words.sound)
+                            on_click=lambda _: page.run_task(playSound, res.words.sound)
                         )
                     ],
                     alignment=ft.MainAxisAlignment.CENTER,
                     expand=True
                 ),
-                border=ft.Border.all(4, ft.Colors.GREY),
+                border=ft.Border.all(4, ft.Colors.BLUE_ACCENT),
                 expand=1
             )
             ,
             ft.Row(
                 controls=[
-                    tabWidget(res.gaze_score, 18, ft.FontWeight.W_600, 8, 4, ft.Colors.GREY),
+                    tabWidget(res.gaze_score, 18, ft.FontWeight.W_600, 8, 4, ft.Colors.BLUE),
                     ft.Column(
                         controls=[
                             ft.Text(str(res.gaze_score[4]) + " gazes failed", size=14, weight=ft.FontWeight.W_600,
@@ -88,9 +87,8 @@ def data_widget(res):
 
 
 def switch_infos(word_tab_widget: ft.Control, res: GroupResults, page):
-    
     if word_tab_widget.content.data:
-        word_tab_widget.content = tabWidget(res.words.words, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.GREY,
+        word_tab_widget.content = tabWidget(res.words.words, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.BLUE,
                                             False).content
         page.update()
     else:
@@ -101,14 +99,14 @@ def switch_infos(word_tab_widget: ft.Control, res: GroupResults, page):
 
 
 def res_widget(page, res):
-    word_tab_widget = tabWidget(res.words.words, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.GREY)
+    word_tab_widget = tabWidget(res.words.words, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.BLUE)
 
     word_tab_widget.aspect_ratio = 1
     word_tab_widget.ink = True
 
     word_tab_widget.on_click = lambda _: switch_infos(word_tab_widget, res, page)
 
-    res_data_widget = data_widget(res)
+    res_data_widget = data_widget(res, page)
 
     # Group Result
     return ft.Container(
@@ -123,7 +121,7 @@ def res_widget(page, res):
             vertical_alignment=ft.CrossAxisAlignment.CENTER, expand_loose=True,
             spacing=50,
         ),
-        border=ft.Border.all(10, ft.Colors.AMBER_100),
+        border=ft.Border.all(10, ft.Colors.BLUE_ACCENT),
         expand=1,
         margin=ft.Margin.symmetric(horizontal=20)
     )
@@ -141,7 +139,7 @@ def points_canva(page, res):
     canvas.append(canva)
 
     return ft.Container(content=canva,
-                        border=ft.Border.all(6, ft.Colors.GREY),
+                        border=ft.Border.all(6, ft.Colors.BLUE),
                         expand=1,
                         aspect_ratio=1,
                         data=True)
@@ -152,8 +150,6 @@ def handle_resize(e):
     canva_height: float = e.height
 
     (res, page) = e.control.data
-
-    stroke_paint = ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE)
     shapes = []
 
     old_x = -1
@@ -162,9 +158,7 @@ def handle_resize(e):
     style = ft.TextStyle(size=10)
 
     for pt in res.gaze_points:
-        stroke_paint.color = ft.Colors.random()
-
-        print(stroke_paint.color)
+        stroke_paint = ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE, color= ft.Colors.random())
 
         x = round((pt.x / SCREEN_WIDTH) * canva_width)
         y = round((pt.y / SCREEN_HEIGHT) * canva_height)
@@ -377,5 +371,4 @@ def ResultScreenView(page: ft.Page, state: AppState):
         ],
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         vertical_alignment=ft.MainAxisAlignment.CENTER,
-        # scroll=ft.ScrollMode.AUTO
     )
