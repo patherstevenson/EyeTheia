@@ -2,11 +2,11 @@ import asyncio
 import threading
 import time
 
-import GazeManager
+from GazeManager import GazeManager
 import mediapipe as mp
 from experiments.wordExperiment.GazePoint import GazePoint
 from experiments.wordExperiment.GroupResults import GroupResults
-from ui import AppState
+from ui.AppState import AppState
 from utils.config import SCREEN_WIDTH, SCREEN_HEIGHT
 
 
@@ -19,7 +19,7 @@ class WordExperiment:
         self.running = False
         self.last_coords = None
         self._thread = None
-        self._listeners = {}
+        self.listeners = {}
         self.state: AppState = state
         self.last_group_date = time.time()
 
@@ -38,10 +38,10 @@ class WordExperiment:
         await self.next_words()
 
     def add_finish_listener(self, finish_listener):
-        self._listeners["finish"] = finish_listener
+        self.listeners["finish"] = finish_listener
 
     def add_listener(self, listener):
-        self._listeners["coords"] = listener
+        self.listeners["coords"] = listener
 
     def stop(self):
         self.running = False
@@ -52,9 +52,9 @@ class WordExperiment:
             while self.running:
                 cx, cy = self.gaze_manager.getGazeCoords(face_mesh)
                 self.last_coords = (cx, cy)
-                self._listeners["coords"](cx, cy)
+                self.listeners["coords"](cx, cy)
 
-                if(self.state.settings.gaze_per_second != 0):
+                if self.state.settings.gaze_per_second != 0:
                     to_wait_between_gaze = (1 / self.state.settings.gaze_per_second)
 
                     if (len(self.state.results) > 0) & ((time.time() - last_gaze * 1.0) >= to_wait_between_gaze):
@@ -63,14 +63,14 @@ class WordExperiment:
                         self.state.results[-1].gaze_points.append(GazePoint(len(self.state.results[-1].gaze_points), cx, cy))
                         last_gaze = time.time()
 
-                if (time.time() - self.last_group_date >= self.state.settings.max_time_to_choose):
+                if time.time() - self.last_group_date >= self.state.settings.max_time_to_choose:
                     await self.next_words()
 
     def get_button_index(self):
         """Return button index based on where the patient is looking
         :return : The index of the looked button. 4 if no face is detected"""
         (cx, cy) = self.last_coords
-        if (cx == -1 & cy == -1):
+        if cx == -1 & cy == -1:
             return 4
         else:
             result = 0
@@ -97,30 +97,30 @@ class WordExperiment:
         else:
             return []
 
-    async def next_words(self, choosen=-1):
+    async def next_words(self, chosen=-1):
         """Show the next word group, and process result if given
-        :param choosen : Chosen word in the previous group. If no word was clicked, chosen == -1. If first group, chosen == -2
+        :param chosen : Chosen word in the previous group. If no word was clicked, chosen == -1. If first group, chosen == -2
         """
 
-        if (choosen >= 0):
+        if chosen >= 0:
             # Any result given (no auto-skip or first group)
-            self.state.results[-1].selected = choosen
+            self.state.results[-1].selected = chosen
 
-        if (len(self.word_groups) > len(self.state.results)):
+        if len(self.word_groups) > len(self.state.results):
             # Show next group
             new_index = len(self.state.results)
 
             total_time = time.time() - self.last_group_date
 
-            self._listeners["show_plus"]()
+            self.listeners["show_plus"]()
             await asyncio.sleep(self.state.settings.time_to_wait_between)
 
             new_word_group = self.word_groups[new_index]
-            self.state.results.append(GroupResults(new_word_group, new_word_group, choosen, total_time))
+            self.state.results.append(GroupResults(new_index, new_word_group, chosen, total_time))
 
-            await self._listeners["show_word_group"]()
+            await self.listeners["show_word_group"]()
             self.last_group_date = time.time()
 
 
         else:
-            self._listeners["finish"]()
+            self.listeners["finish"]()

@@ -9,8 +9,6 @@ from ui.AppState import AppState
 def WordExperimentView(page: ft.Page, state: AppState):
     exp = WordExperiment(state)
 
-    cx_text = ft.Text("cx: -")
-    cy_text = ft.Text("cy: -")
     quarter_width = max((page.window.width or 1920) / 2, 200) * state.settings.buttons_size
     quarter_height = max((page.window.height or 1080) / 2, 140) * state.settings.buttons_size
 
@@ -70,7 +68,9 @@ def WordExperimentView(page: ft.Page, state: AppState):
         current_words = exp.get_current_words()
 
         for word_index, button in enumerate(words):
-            button.content.content.value = current_words[word_index]
+            content = button.content.content
+            if content :
+                content.value = current_words[word_index]
 
         container.controls = [words_grid]
         page.update()

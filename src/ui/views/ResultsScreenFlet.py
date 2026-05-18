@@ -1,5 +1,3 @@
-import csv
-
 import flet as ft
 import flet.canvas as cv
 from experiments.wordExperiment.GazePoint import GazePoint
@@ -89,8 +87,9 @@ def data_widget(res):
     )
 
 
-def switch_infos(word_tab_widget, res: GroupResults, page):
-    if (word_tab_widget.content.data):
+def switch_infos(word_tab_widget: ft.Control, res: GroupResults, page):
+    
+    if word_tab_widget.content.data:
         word_tab_widget.content = tabWidget(res.words.words, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.GREY,
                                             False).content
         page.update()
@@ -130,17 +129,11 @@ def res_widget(page, res):
     )
 
 
-canva_width = 0
-canva_height = 0
-
 canvas = []
 
 
 def points_canva(page, res):
     canva = cv.Canvas(
-        # data=True,
-        # width=200,
-        # height=200,
         on_resize=handle_resize,
         data=(res, page)
     )
@@ -169,12 +162,15 @@ def handle_resize(e):
     style = ft.TextStyle(size=10)
 
     for pt in res.gaze_points:
+        stroke_paint.color = ft.Colors.random()
+
+        print(stroke_paint.color)
 
         x = round((pt.x / SCREEN_WIDTH) * canva_width)
         y = round((pt.y / SCREEN_HEIGHT) * canva_height)
         shapes.append(cv.Circle(x=x, y=y, radius=10, paint=stroke_paint))
         shapes.append(cv.Text(x=x, y=y, value=str(pt.index), style=style, alignment=ft.Alignment.CENTER))
-        if (old_x >= 0 & old_y >= 0):
+        if old_x >= 0 & old_y >= 0:
             shapes.append(cv.Line(paint=stroke_paint, x1=old_x, y1=old_y, x2=x, y2=y))
         old_x = x
         old_y = y
@@ -185,7 +181,7 @@ def handle_resize(e):
 
 
 def ResultScreenView(page: ft.Page, state: AppState):
-    if state.results == []:
+    if not state.results:
         state.results = [
             GroupResults(0, WordGroup(["orange", "blouse", "pas", "bas"], "pas", "pronunciation_fr_pas.mp3"), 1),
             GroupResults(1, WordGroup(["permis", "feutre", "peine", "beine"], "peine", "pronunciation_fr_peine.mp3"),
@@ -348,20 +344,25 @@ def ResultScreenView(page: ft.Page, state: AppState):
 
     page.update()
 
+    height = page.height
+
+    if height is None:
+        height = 0
+
     return ft.View(
         controls=[
-            ft.ListView(controls=ft.Column(
+            ft.ListView(controls=[ft.Column(
                 controls=widget_list,
                 expand=True,
                 alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            ),
+            )],
                 auto_scroll=True,
-                height=page.height - 100, ),
+                height=height - 100, ),
             ft.Row(controls=[
                 ft.Button(
                     content="Go Back To Main Menu",
-                    on_click=lambda _: page.run_task(page.push_route, ("/"))
+                    on_click=lambda _: page.run_task(page.push_route, "/")
                 ),
                 ft.Button(
                     content="Save to CSV",
@@ -375,6 +376,6 @@ def ResultScreenView(page: ft.Page, state: AppState):
             ]),
         ],
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        vertical_alignment=ft.MainAxisAlignment.CENTER,
         # scroll=ft.ScrollMode.AUTO
     )

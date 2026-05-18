@@ -33,17 +33,17 @@ async def main(page: ft.Page):
 
     page.data = state
 
-    page.window.always_on_top = True
+    # page.window.always_on_top = True
 
     async def route_change(e: ft.RouteChangeEvent):
-        """Method called automaticly when page.push_route is ran"""
+        """Method called automatically when page.push_route is ran"""
         page.views.clear()
         match e.route:
             case "/":
                 page.views.append(MainMenuView(page, state))
-
             case "/WordExperiment":
                 page.views.append(WordExperimentView(page, state))
+                page.window.maximized = True
             case "/Results":
                 page.views.append(ResultScreenView(page, state))
             case "/Personalize":
@@ -51,11 +51,11 @@ async def main(page: ft.Page):
             case "/HeatMap":
                 page.views.append(HeatMapView(page, state))
             case _:
-                page.views.append(ft.View(controls=ft.Column(controls=[
+                page.views.append(ft.View(controls=[ft.Column(controls=[
                     ft.Text("No page found"), ft.Button(content="Go Back to Main Menu",
-                                                        on_click=lambda _: page.run_task(page.push_route, "/"))], ),
+                                                        on_click=lambda _: page.run_task(page.push_route, "/"))], )],
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    vertical_alignment=ft.CrossAxisAlignment.CENTER))
+                    vertical_alignment=ft.MainAxisAlignment.CENTER))
 
         page.update()
 

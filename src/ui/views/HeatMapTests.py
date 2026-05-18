@@ -1,6 +1,5 @@
 import flet as ft
-from ui import AppState
-from ui.FletUtils import load_this_csv
+from ui.AppState import AppState
 
 
 def HeatMapView(page: ft.Page, state: AppState):

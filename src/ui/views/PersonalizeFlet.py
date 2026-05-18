@@ -16,9 +16,17 @@ def PersonalizeView(page: ft.Page, state: AppState):
         e.control.height = e.page.window.height
         e.control.update()
 
-    def handle_reorder(e: ft.OnReorderEvent, state: AppState, update_callback):
-        moved_group = state.word_groups.pop(e.old_index)
-        state.word_groups.insert(e.new_index, moved_group)
+    def handle_reorder(e: ft.OnReorderEvent, app_state: AppState, update_callback):
+        if e.old_index is None:
+            old_index = -1
+        else:
+            old_index = e.old_index
+        if e.new_index is None:
+            new_index = -1
+        else:
+            new_index = e.new_index
+        moved_group = app_state.word_groups.pop(old_index)
+        app_state.word_groups.insert(new_index, moved_group)
 
         update_callback()
 
@@ -114,7 +122,7 @@ class AddGroupWidget(ft.IconButton):
         self.icon = ft.Icons.ADD_BOX
         self.icon_color = ft.Colors.BLUE
 
-    def handle_click(self, e):
+    def handle_click(self):
         self.page.data.word_groups.append(WordGroup())
         self.update_callback()
 
@@ -129,7 +137,7 @@ class RemoveGroupWidget(ft.IconButton):
         self.icon = ft.Icons.DELETE
         self.icon_color = ft.Colors.RED
 
-    def handle_click(self, e):
+    def handle_click(self):
         self.page.data.word_groups.pop(self.group_index)
         self.update_callback()
 
@@ -145,7 +153,6 @@ class CorrectAnswerDropdown(ft.Dropdown):
 
         for index, word in enumerate(self.word_group.words):
             self.options.append(ft.DropdownOption(key=str(index), text=word))
-
 
         self.index: int = word_group.words.index(self.word_group.correct)
 
@@ -173,15 +180,16 @@ class SoundPicker(ft.Container):
         super().__init__(content=None, **kwargs)
 
         self.word_group = word_group
-        self.buttons = [
-            ft.Button(content=word_group.sound),
-            ft.IconButton(
-                icon=ft.Icons.PLAY_ARROW,
-                icon_color=ft.Colors.BLUE,
-                icon_size=40,
-            ), ]
+
+        self.choose_sound_button = ft.Button(content=word_group.sound)
+        self.play_sound_button = ft.IconButton(
+            icon=ft.Icons.PLAY_ARROW,
+            icon_color=ft.Colors.BLUE,
+            icon_size=40,
+        )
+
         self.content = ft.Row(
-            controls=self.buttons
+            controls=[self.choose_sound_button, self.play_sound_button],
         )
         self.border = ft.Border.all(1, ft.Colors.GREY)
         self.border_radius = ft.BorderRadius.all(15)
@@ -189,14 +197,17 @@ class SoundPicker(ft.Container):
         self.padding = ft.Padding.all(5)
 
     def build(self):
-        self.buttons[0].on_click = lambda _: self.page.run_task(self.choose_sound)
-        self.buttons[1].on_click = lambda _: self.page.run_task(self.play_sound)
+        self.choose_sound_button.on_click = lambda _: self.page.run_task(self.choose_sound)
+        self.play_sound_button.on_click = lambda _: self.page.run_task(self.play_sound)
+
+
+
 
     async def play_sound(self):
         await playSound(self.word_group.sound)
 
     def update_text(self):
-        self.buttons[0].content = self.word_group.sound.split("/")[-1]
+        self.choose_sound_button.content = self.word_group.sound.split("/")[-1]
         self.update()
 
     async def choose_sound(self):
@@ -340,10 +351,39 @@ class DragTile(ft.DragTarget):
 
 
 @ft.control
+class ValuePicker(ft.Row):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.built = False
+
+        self.value = 0.0
+
+        self.text_field = ft.TextField()
+
+    def build(self):
+        self.built = True
+
+    def set_value_updater(self, method: Callable):
+        self.text_field.on_change = method
+
+    def set_value(self, value):
+        self.value = value
+        self.update_shown()
+
+    def update_shown(self):
+        """Updates the value shown based on widget value"""
+        self.text_field.value = str(self.value)
+        if self.built:
+            self.update()
+
+
+@ft.control
 class AppSettingsWidget(ft.Container):
     """The widget used to modify any parameter in AppSettings. Store the reference of the AppSettings in his Data attribute."""
 
-    def __init__(self, setting: AppSettingsEnum, value_picker: ft.Control, description: str, to_update: list[ft.Control] = [], **kwargs):
+    def __init__(self, setting: AppSettingsEnum, value_picker: ValuePicker, description: str, to_update=None, **kwargs):
+        if to_update is None:
+            to_update = []
         self.setting = setting
         self.value_picker = value_picker
         self.description = description
@@ -367,7 +407,7 @@ class AppSettingsWidget(ft.Container):
 
     def update_intern_value(self, e, new_value=None):
         """Updates the value in the App setting and in the Picker Object"""
-        if new_value == None:
+        if new_value is None:
             if new_value == "":
                 new_value = 0.0
             else:
@@ -382,7 +422,7 @@ class AppSettingsWidget(ft.Container):
 
 
 @ft.control
-class NumberPicker(ft.Row):
+class NumberPicker(ValuePicker):
 
     def __init__(self, step: float = 1.0, minimum: float = None, **kwargs):
         super().__init__(**kwargs)
@@ -406,9 +446,6 @@ class NumberPicker(ft.Row):
 
         self.alignment = ft.MainAxisAlignment.SPACE_BETWEEN
 
-    def set_value_updater(self, method: Callable):
-        self.text_field.on_change = method
-
     def button_up(self, e):
         new_val = float(self.value) + self.step
         if self.minimum is not None:
@@ -423,23 +460,13 @@ class NumberPicker(ft.Row):
                 return
         self.text_field.on_change(e, new_val)
 
-    def set_value(self, value):
-        self.value = value
-        self.text_field.value = str(value)
-
-    def update_shown(self):
-        """Updates the value shown based on widget value"""
-        self.text_field.value = str(self.value)
-        if (self.page):
-            self.update()
-
 
 @ft.control
-class SliderPicker(ft.Row):
+class SliderPicker(ValuePicker):
 
     def set_value_updater(self, method: Callable):
+        super().set_value_updater(method)
         self.slider.on_change = method
-        self.text_field.on_change = method
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -460,11 +487,8 @@ class SliderPicker(ft.Row):
             self.text_field
         ]
 
-    def build(self):
-        self.built = True
-
     def set_value(self, value):
-        if (value > 1):
+        if value > 1:
             value = 1.0
         self.value = value
         self.update_shown()
@@ -472,10 +496,11 @@ class SliderPicker(ft.Row):
     def update_shown(self):
         """Updates the value shown based on widget value"""
         self.slider.value = self.value
-        self.text_field.value = str(self.value)
-        if (self.built):
-            self.update()
-            self.parent.update()
+        super().update_shown()
+        if self.built:
+            parent = self.parent
+            if parent:
+                parent.update()
 
 
 @ft.control

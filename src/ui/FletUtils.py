@@ -9,7 +9,7 @@ from ui.AppState import AppState
 
 
 async def playSound(path: str):
-    if (path.startswith("/")):
+    if path.startswith("/"):
         playsound(path)
     else:
         playsound("src/experiments/wordExperiment/res/sounds/" + path)
@@ -36,25 +36,23 @@ async def load_this_csv(page: ft.Page, file_path: str):
         first_row = True
         file_type = "experience"
 
-        count = 0
-
         for row in reader:
             if first_row:
-                if (row[0] == "experience"):
+                if row[0] == "experience":
                     file_type = "experience"
                     page.data.settings.max_time_to_choose = float(row[1])
                     page.data.settings.time_to_wait_between = float(row[2])
                     page.data.settings.buttons_size = float(row[3])
                     page.data.settings.gaze_per_second = float(row[4])
-                elif (row[0] == "result_index"):
+                elif row[0] == "result_index":
                     file_type = "results"
                     page.data.results = []
 
                 first_row = False
             else:
-                if (file_type == "experience"):
+                if file_type == "experience":
                     page.data.word_groups.append(WordGroup(row[:4], row[4], row[5]))
-                elif (file_type == "results"):
+                elif file_type == "results":
                     print("results")
                     print(row)
                     index = int(row[0])

@@ -28,13 +28,13 @@ def MainMenuView(page: ft.Page, state: AppState):
     ]
     column = ft.Column(
         controls=buttons,
-        alignment=ft.Alignment.CENTER,
+        alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         spacing=20
     )
 
     return ft.View(
-        controls=column,
+        controls=[column],
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        vertical_alignment=ft.CrossAxisAlignment.CENTER
+        vertical_alignment=ft.MainAxisAlignment.CENTER
     )

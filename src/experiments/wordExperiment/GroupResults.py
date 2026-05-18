@@ -7,18 +7,23 @@ class GroupResults:
     Represent the result of a Group of Words
     """
 
-    def __init__(self, index: int, words: WordGroup, selected: int = - 1, total_time: int = 0, gaze_score: list[int] = [0, 0, 0, 0, 0], gaze_points: list[GazePoint] = []):
+    def __init__(self, index: int, words: WordGroup, selected: int = - 1, total_time: float = 0, gaze_score: list[int] = None, gaze_points=None):
         """
         Init a GroupResult
         :param index: the index of the group in the whole dataset
         :param words: the words shown in the group
         :param selected: the index of the selected word. -1 means no word were chosen yet
         """
+        if gaze_points is None:
+            gaze_points = []
         self.index: int = index
         self.words: WordGroup = words
         self.selected: int = selected
         self.total_time: float = total_time
-        self.gaze_score: list[int] = gaze_score
+        if gaze_score is not None:
+            self.gaze_score: list[int] = gaze_score
+        else:
+            self.gaze_score = [0, 0, 0, 0, 0]
         self.gaze_points: list[GazePoint] = gaze_points
 
     def get_selected_word(self):
