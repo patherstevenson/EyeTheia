@@ -9,6 +9,7 @@ from utils.config import SCREEN_HEIGHT, SCREEN_WIDTH
 
 
 def tabWidget(data, size, font: ft.FontWeight, spacing, border_width, border_color, is_score: bool = False):
+    """Left part of a word_group widget, with words or points"""
     words = []
     for o in data:
         words.append(str(o))
@@ -40,7 +41,7 @@ def tabWidget(data, size, font: ft.FontWeight, spacing, border_width, border_col
 
 
 def data_widget(res, page: ft.Page):
-    # Data
+    """Right half of a word_group widge, with the sound, the gaze points and time took to click"""
     return ft.Column(
         controls=[
             ft.Container(
@@ -87,6 +88,7 @@ def data_widget(res, page: ft.Page):
 
 
 def switch_infos(word_tab_widget: ft.Control, res: GroupResults, page):
+    """Switch the main tab between the 4 words and a visualisation of where the user looked"""
     if word_tab_widget.content.data:
         word_tab_widget.content = tabWidget(res.words.words, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.BLUE,
                                             False).content
@@ -99,6 +101,7 @@ def switch_infos(word_tab_widget: ft.Control, res: GroupResults, page):
 
 
 def res_widget(page, res):
+    """Widget used to show results of a single word_group"""
     word_tab_widget = tabWidget(res.words.words, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.BLUE)
 
     word_tab_widget.aspect_ratio = 1
@@ -146,6 +149,7 @@ def points_canva(page, res):
 
 
 def handle_resize(e):
+    """Handle when the window resize to update all widgets"""
     canva_width: float = e.width
     canva_height: float = e.height
 
@@ -158,7 +162,7 @@ def handle_resize(e):
     style = ft.TextStyle(size=10)
 
     for pt in res.gaze_points:
-        stroke_paint = ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE, color= ft.Colors.random())
+        stroke_paint = ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE, color=ft.Colors.random())
 
         x = round((pt.x / SCREEN_WIDTH) * canva_width)
         y = round((pt.y / SCREEN_HEIGHT) * canva_height)
@@ -175,7 +179,9 @@ def handle_resize(e):
 
 
 def ResultScreenView(page: ft.Page, state: AppState):
+    """Returns a view to show all the results of an experience"""
     if not state.results:
+        # If no results are found, manually load some (usually used for testing)
         state.results = [
             GroupResults(0, WordGroup(["orange", "blouse", "pas", "bas"], "pas", "pronunciation_fr_pas.mp3"), 1),
             GroupResults(1, WordGroup(["permis", "feutre", "peine", "beine"], "peine", "pronunciation_fr_peine.mp3"),

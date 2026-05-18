@@ -9,6 +9,7 @@ from ui.AppState import AppState
 
 
 async def playSound(path: str):
+    """Play a sound. Take a full path, or just the file name (in that case, look at src/experiments/wordExperiment/res/sounds)"""
     if path.startswith("/"):
         playsound(path)
     else:
@@ -16,6 +17,7 @@ async def playSound(path: str):
 
 
 async def loadCSV(page: ft.Page):
+    """Load a CSV in the memory"""
     file_path = await ft.FilePicker().pick_files(allow_multiple=False)
 
     if not file_path:
@@ -29,7 +31,10 @@ async def loadCSV(page: ft.Page):
 
 
 async def load_this_csv(page: ft.Page, file_path: str):
-    """Load the specified CSV in state.word_groups"""
+    """Load the specified CSV based on his first word
+    If first word is "experience", will load the data in appState.word_groups
+    If first word is "results", will load data in appState.results
+    """
     with open(file_path, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
 
@@ -79,7 +84,9 @@ async def load_this_csv(page: ft.Page, file_path: str):
             if file_type == "results":
                 page.push_route("/")
 
+
 async def saveExperienceToCSV(state: AppState):
+    """Save the experience in memory to a CSV file"""
     fp = ft.FilePicker()
     file_path = await fp.save_file(dialog_title="Save File", file_name="word_experience.csv", file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=[".csv"])
 
@@ -91,7 +98,9 @@ async def saveExperienceToCSV(state: AppState):
         for word_group in state.word_groups:
             writer.writerow(word_group.words + [word_group.correct, word_group.sound])
 
+
 async def saveResultsToCSV(state: AppState):
+    """Save the results in memory to a CSV file"""
     fp = ft.FilePicker()
     file_path = await fp.save_file(dialog_title="Save File", file_name="word_experience_results.csv", file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=[".csv"])
 

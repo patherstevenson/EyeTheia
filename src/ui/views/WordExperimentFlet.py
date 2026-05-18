@@ -2,8 +2,8 @@ import asyncio
 
 import flet as ft
 from experiments.wordExperiment.WordExperiment import WordExperiment
-from ui.FletUtils import playSound
 from ui.AppState import AppState
+from ui.FletUtils import playSound
 
 
 def WordExperimentView(page: ft.Page, state: AppState):
@@ -54,6 +54,7 @@ def WordExperimentView(page: ft.Page, state: AppState):
     )
 
     def show_plus():
+        """Show a big "+" in the middle of the screen for a time set in AppSettings"""
         container.controls = [
             ft.Icon(
                 icon=ft.Icons.ADD,
@@ -64,12 +65,12 @@ def WordExperimentView(page: ft.Page, state: AppState):
         page.update()
 
     async def show_word_group():
-
+        """Show the 4 words of the current word_group in 4 buttons, each ones in a quater of the screen, with a size set in AppSettings"""
         current_words = exp.get_current_words()
 
         for word_index, button in enumerate(words):
             content = button.content.content
-            if content :
+            if content:
                 content.value = current_words[word_index]
 
         container.controls = [words_grid]
@@ -84,16 +85,19 @@ def WordExperimentView(page: ft.Page, state: AppState):
     process_state = {"process_started": False}
 
     def on_new_coords(cx, cy):
+        """Called when the tracker finished to guess the Gaze coordinates"""
         ui_loop.call_soon_threadsafe(queue.put_nowait, (cx, cy))
 
     exp.add_listener(on_new_coords)
 
     async def start_experiment(_):
+        """Start an experiment"""
         if not process_state["process_started"]:
             process_state["process_started"] = True
         await exp.start()
 
     def stop_experiment():
+        """Stop the running experiment"""
         exp.stop()
         ui_loop.call_soon_threadsafe(queue.put_nowait, None)
         process_state["process_started"] = False
@@ -107,12 +111,13 @@ def WordExperimentView(page: ft.Page, state: AppState):
     exp.add_finish_listener(stop_experiment)
 
     async def back_to_main_menu(page: ft.Page):
+        """Go back to main menu"""
         await page.push_route("/")
 
     container.controls = [
         ft.Column(
             controls=[
-                ft.Text("Before Starting : ", weight=ft.FontWeight.W_900, size = 12),
+                ft.Text("Before Starting : ", weight=ft.FontWeight.W_900, size=12),
                 ft.Row(
                     controls=[
                         ft.Button(

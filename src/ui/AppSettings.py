@@ -4,6 +4,7 @@ from enum import Enum
 
 @dataclass
 class WordExperimentSettings:
+    """Class representing settings for word experiment"""
     max_time_to_choose: int = 50
     time_to_wait_between: float = 0.5
     buttons_size: float = 0.5
