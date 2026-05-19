@@ -41,7 +41,7 @@ def tabWidget(data, size, font: ft.FontWeight, spacing, border_width, border_col
 
 
 def data_widget(res, page: ft.Page):
-    """Right half of a word_group widge, with the sound, the gaze points and time took to click"""
+    """Right half of a word_group widget, with the sound, the gaze points and time took to click"""
     return ft.Column(
         controls=[
             ft.Container(
@@ -88,7 +88,7 @@ def data_widget(res, page: ft.Page):
 
 
 def switch_infos(word_tab_widget: ft.Control, res: GroupResults, page):
-    """Switch the main tab between the 4 words and a visualisation of where the user looked"""
+    """Switch the main tab between the 4 words and a visualization of where the user looked"""
     if word_tab_widget.content.data:
         word_tab_widget.content = tabWidget(res.words.words, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.BLUE,
                                             False).content
@@ -162,7 +162,8 @@ def handle_resize(e):
     style = ft.TextStyle(size=10)
 
     for pt in res.gaze_points:
-        stroke_paint = ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE, color=ft.Colors.random())
+        # stroke_paint = ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE, color=ft.Colors.random(exclude=[ft.Colors.WHITE, ft.Colors.GREY]))
+        stroke_paint = ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE, color=ft.Colors.BLACK)
 
 
         x = round((pt.x / SCREEN_WIDTH) * canva_width)
@@ -180,7 +181,7 @@ def handle_resize(e):
 
 
 def ResultScreenView(page: ft.Page, state: AppState):
-    """Returns a view to show all the results of an experience"""
+    """Returns a view to show all the results of an experiment"""
     if not state.results:
         # If no results are found, manually load some (usually used for testing)
         state.results = [

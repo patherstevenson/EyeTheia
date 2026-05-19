@@ -7,6 +7,8 @@ from ui.FletUtils import playSound
 
 
 def WordExperimentView(page: ft.Page, state: AppState):
+    app_scale = 1.5
+
     exp = WordExperiment(state)
 
     quarter_width = max((page.window.width or 1920) / 2, 200) * state.settings.buttons_size
@@ -16,7 +18,7 @@ def WordExperimentView(page: ft.Page, state: AppState):
         controls=[],
         expand=True,
         alignment=ft.MainAxisAlignment.CENTER,
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER
     )
 
     words = [
@@ -103,9 +105,6 @@ def WordExperimentView(page: ft.Page, state: AppState):
         process_state["process_started"] = False
         page.update()
 
-        # for res in state.results:
-        #     print(str(res))
-
         page.run_task(page.push_route, "/Results")
 
     exp.add_finish_listener(stop_experiment)
@@ -117,34 +116,35 @@ def WordExperimentView(page: ft.Page, state: AppState):
     container.controls = [
         ft.Column(
             controls=[
-                ft.Text("Before Starting : ", weight=ft.FontWeight.W_900, size=12),
+                ft.Text("Before Starting : ", weight=ft.FontWeight.W_900, size=18 * app_scale),
                 ft.Row(
                     controls=[
                         ft.Button(
-                            content="Calibration", on_click=state.gaze_manager.calibrate
+                            content="Calibration", on_click=state.gaze_manager.calibrate, scale=app_scale
                         ),
                         ft.Button(
                             content="Personalize Experiment",
-                            on_click=lambda _: page.run_task(page.push_route, "/Personalize")
+                            on_click=lambda _: page.run_task(page.push_route, "/Personalize"), scale=app_scale
                         ),
-                        # ft.Button(
-                        #     content="LoadCSV",
-                        #     on_click=lambda _: page.run_task(loadCSV, page)
-                        # ),
+                        ft.Button(
+                            content="Last Results",
+                            on_click=lambda _: page.run_task(page.push_route, "/Results"), scale=app_scale
+                        ),
                     ],
                     alignment=ft.MainAxisAlignment.CENTER,
+                    spacing=70 * app_scale,
                 ),
                 ft.Button(
-                    content="Démarrer l'expérience",
-                    on_click=start_experiment,
+                    content="Start Experiment",
+                    on_click=start_experiment, scale=app_scale
                 ),
                 ft.Button(
-                    content="MainMenu",
-                    on_click=lambda _: page.run_task(back_to_main_menu, page)
+                    content="Main Menu",
+                    on_click=lambda _: page.run_task(back_to_main_menu, page), scale=app_scale
                 ),
             ],
             alignment=ft.MainAxisAlignment.CENTER,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=20 * app_scale
         ),
     ]
 

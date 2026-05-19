@@ -61,5 +61,6 @@ async def main(page: ft.Page):
 
     page.on_route_change = route_change
 
-    page.views.append(MainMenuView(page, state))
+    main_menu_view = MainMenuView(page, state)
+    page.views.append(main_menu_view)
     # page.views.append(HeatMapView(page, state))

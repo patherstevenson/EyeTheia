@@ -32,19 +32,19 @@ async def loadCSV(page: ft.Page):
 
 async def load_this_csv(page: ft.Page, file_path: str):
     """Load the specified CSV based on his first word
-    If first word is "experience", will load the data in appState.word_groups
+    If first word is "experiment", will load the data in appState.word_groups
     If first word is "results", will load data in appState.results
     """
     with open(file_path, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
 
         first_row = True
-        file_type = "experience"
+        file_type = "experiment"
 
         for row in reader:
             if first_row:
-                if row[0] == "experience":
-                    file_type = "experience"
+                if row[0] == "experiment":
+                    file_type = "experiment"
                     page.data.settings.max_time_to_choose = float(row[1])
                     page.data.settings.time_to_wait_between = float(row[2])
                     page.data.settings.buttons_size = float(row[3])
@@ -57,7 +57,7 @@ async def load_this_csv(page: ft.Page, file_path: str):
 
                 first_row = False
             else:
-                if file_type == "experience":
+                if file_type == "experiment":
                     page.data.word_groups.append(WordGroup(row[:4], row[4], row[5]))
                 elif file_type == "results":
                     index = int(row[0])
@@ -72,7 +72,6 @@ async def load_this_csv(page: ft.Page, file_path: str):
                     cpt_gaze = 0
 
                     for str_pt in gaze_points_str:
-                        print(str_pt)
                         x = str_pt.split(":")[0].strip("(")
                         y = str_pt.split(":")[1].strip(")")
                         gaze_points.append(GazePoint(cpt_gaze, int(x), int(y)))
@@ -83,15 +82,15 @@ async def load_this_csv(page: ft.Page, file_path: str):
                 page.push_route("/")
 
 
-async def saveExperienceToCSV(state: AppState):
-    """Save the experience in memory to a CSV file"""
+async def saveExperimentToCSV(state: AppState):
+    """Save the experiment in memory to a CSV file"""
     fp = ft.FilePicker()
-    file_path = await fp.save_file(dialog_title="Save File", file_name="word_experience.csv", file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=[".csv"])
+    file_path = await fp.save_file(dialog_title="Save File", file_name="word_experiment.csv", file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=[".csv"])
 
     with(open(file_path, 'w', newline='')) as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
 
-        writer.writerow(["experience", state.settings.max_time_to_choose, state.settings.time_to_wait_between, state.settings.buttons_size, state.settings.gaze_per_second])
+        writer.writerow(["experiment", state.settings.max_time_to_choose, state.settings.time_to_wait_between, state.settings.buttons_size, state.settings.gaze_per_second])
 
         for word_group in state.word_groups:
             writer.writerow(word_group.words + [word_group.correct, word_group.sound])
@@ -100,7 +99,7 @@ async def saveExperienceToCSV(state: AppState):
 async def saveResultsToCSV(state: AppState):
     """Save the results in memory to a CSV file"""
     fp = ft.FilePicker()
-    file_path = await fp.save_file(dialog_title="Save File", file_name="word_experience_results.csv", file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=[".csv"])
+    file_path = await fp.save_file(dialog_title="Save File", file_name="word_experiment_results.csv", file_type=ft.FilePickerFileType.CUSTOM, allowed_extensions=[".csv"])
 
     with(open(file_path, 'w', newline='')) as csvfile:
         writer = csv.writer(csvfile, delimiter=',')

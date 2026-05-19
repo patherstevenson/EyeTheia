@@ -8,7 +8,7 @@ from ui.AppSettings import WordExperimentSettings
 
 @dataclass
 class AppState:
-    """Class reuniting the GazeManager, all the experience's settings, the word_groups and the previous results. Usually shared in "page.data" """
+    """Class reuniting the GazeManager, all the experiment's settings, the word_groups and the previous results. Usually shared in "page.data" """
     gaze_manager: GazeManager
     settings: WordExperimentSettings
     word_groups: list[WordGroup] = field(default_factory=list)
