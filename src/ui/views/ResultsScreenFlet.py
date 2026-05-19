@@ -164,6 +164,7 @@ def handle_resize(e):
     for pt in res.gaze_points:
         stroke_paint = ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE, color=ft.Colors.random())
 
+
         x = round((pt.x / SCREEN_WIDTH) * canva_width)
         y = round((pt.y / SCREEN_HEIGHT) * canva_height)
         shapes.append(cv.Circle(x=x, y=y, radius=10, paint=stroke_paint))

@@ -60,8 +60,6 @@ async def load_this_csv(page: ft.Page, file_path: str):
                 if file_type == "experience":
                     page.data.word_groups.append(WordGroup(row[:4], row[4], row[5]))
                 elif file_type == "results":
-                    print("results")
-                    print(row)
                     index = int(row[0])
                     word_group = WordGroup(row[1:5], row[5], row[6])
                     selected = int(row[7])
@@ -77,7 +75,7 @@ async def load_this_csv(page: ft.Page, file_path: str):
                         print(str_pt)
                         x = str_pt.split(":")[0].strip("(")
                         y = str_pt.split(":")[1].strip(")")
-                        gaze_points.append(GazePoint(cpt_gaze, x, y))
+                        gaze_points.append(GazePoint(cpt_gaze, int(x), int(y)))
 
                     page.data.results.append(GroupResults(index, word_group, selected, total_time, gaze_score, gaze_points))
 
