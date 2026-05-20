@@ -5,15 +5,20 @@ from ui.AppState import AppState
 from ui.FletUtils import saveResultsToCSV, loadCSV, playSound
 from utils.config import SCREEN_HEIGHT, SCREEN_WIDTH
 
-
-def tabWidget(data, size, font: ft.FontWeight, spacing, border_width, border_color, is_score: bool = False):
+@ft.control
+class tabWidget(ft.Container):
     """Left part of a word_group widget, with words or points"""
-    words = []
-    for o in data:
-        words.append(str(o))
 
-    return ft.Container(
-        content=ft.Column(
+    def __init__(self, data, size, font: ft.FontWeight, spacing, border_width, border_color, is_score: bool = False, **kwargs):
+        super().__init__(**kwargs)
+
+
+
+        words = []
+        for o in data:
+            words.append(str(o))
+
+        self.content=ft.Column(
             controls=[
                 ft.Row(
                     controls=[ft.Text(words[0], size=size, weight=font),
@@ -31,17 +36,21 @@ def tabWidget(data, size, font: ft.FontWeight, spacing, border_width, border_col
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             spacing=spacing,
             data=is_score
-        ),
-        border=ft.Border.all(border_width, border_color),
-        expand=1,
-        aspect_ratio=1,
-    )
+        )
+        self.border=ft.Border.all(border_width, border_color)
+        self.expand=1
+        self.aspect_ratio=1
 
 
-def data_widget(res, page: ft.Page):
+
+@ft.control
+class data_widget(ft.Column):
     """Right half of a word_group widget, with the sound, the gaze points and time took to click"""
-    return ft.Column(
-        controls=[
+
+    def __init__(self, res, page: ft.Page, **kwargs):
+        super().__init__(**kwargs)
+
+        self.controls = [
             ft.Container(
                 content=ft.Row(
                     controls=[
@@ -79,16 +88,15 @@ def data_widget(res, page: ft.Page):
                 alignment=ft.MainAxisAlignment.CENTER,
                 expand=1
             )
-        ],
-        expand=1,
-        aspect_ratio=1
-    )
+        ]
+        self.expand = 1
+        self.aspect_ratio = 1
 
 
 def switch_infos(word_tab_widget: ft.Control, res: GroupResults, page):
     """Switch the main tab between the 4 words and a visualization of where the user looked"""
     if word_tab_widget.content.data:
-        word_tab_widget.content = tabWidget(res.words.words, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.BLUE,False).content
+        word_tab_widget.content = tabWidget(res.words.words, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.BLUE, False).content
         page.update()
     else:
         word_tab_widget.content = points_canva(page, res)
@@ -172,7 +180,6 @@ def handle_resize(e):
         old_y = y
 
     e.control.shapes = shapes
-
 
     page.update()
 
