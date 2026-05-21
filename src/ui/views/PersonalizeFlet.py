@@ -9,14 +9,15 @@ from ui.FletUtils import playSound, loadCSV, saveExperimentToCSV
 WORDS_PER_GROUP = 4
 
 
-def PersonalizeView(page: ft.Page, state: AppState):
+@ft.control
+class PersonalizeView(ft.View):
     """Build the screen used to customize word groups."""
 
-    def handle_size_change(e):
+    def handle_size_change(self, e):
         e.control.height = e.page.window.height
         e.control.update()
 
-    def handle_reorder(e: ft.OnReorderEvent, app_state: AppState, update_callback):
+    def handle_reorder(self, e: ft.OnReorderEvent, app_state: AppState, update_callback):
         if e.old_index is None:
             old_index = -1
         else:
@@ -30,87 +31,89 @@ def PersonalizeView(page: ft.Page, state: AppState):
 
         update_callback()
 
-    reorderable_list = ft.ReorderableListView(
-        show_default_drag_handles=False,
-        controls=[],
-        expand=1,
-        auto_scroll=True,
-        height=page.height,
-        on_reorder=lambda e: handle_reorder(e, state, update_list_controls),
-        on_size_change=lambda e: handle_size_change(e)
-    )
+    def __init__(self, page: ft.Page, state: AppState, **kwargs):
+        super().__init__(**kwargs)
 
-    def update_list_controls():
-        reorderable_list.controls = []
-        for index, group in enumerate(state.word_groups):
-            reorderable_list.controls.append(GroupCustomization(group_index=index, word_group=group, update_callback=update_list_controls))
+        self.reorderable_list = ft.ReorderableListView(
+            show_default_drag_handles=False,
+            controls=[],
+            expand=1,
+            auto_scroll=True,
+            height=page.height,
+            on_reorder=lambda e: self.handle_reorder(e, state, self.update_list_controls),
+            on_size_change=lambda e: self.handle_size_change(e)
+        )
 
-    update_list_controls()
+        self.state = state
 
-    button_preview = ButtonSizePreview()
+        self.update_list_controls()
 
-    max_time_to_choose = AppSettingsWidget(
-        setting=AppSettingsEnum.MAX_TIME_TO_CHOOSE,
-        value_picker=NumberPicker(minimum=0),
-        description="Maximum time to chose a word",
-        data=page.data.settings)
-    time_between = AppSettingsWidget(
-        setting=AppSettingsEnum.TIME_TO_WAIT_BETWEEN,
-        value_picker=NumberPicker(step=0.5, minimum=0),
-        description="Time to wait between 2 word groups",
-        data=page.data.settings)
-    gaze_per_second = AppSettingsWidget(
-        setting=AppSettingsEnum.GAZE_PER_SECOND,
-        value_picker=NumberPicker(step=1, minimum=0),
-        description="Number of gaze the app will try to make every second",
-        data=page.data.settings)
-    button_size = AppSettingsWidget(
-        setting=AppSettingsEnum.BUTTONS_SIZE,
-        value_picker=SliderPicker(),
-        description="Size of the buttons",
-        data=page.data.settings,
-        to_update=[button_preview]
-    )
+        self.button_preview = ButtonSizePreview()
 
-    return ft.View(
-        controls=[
-            ft.Row(
-                controls=[
-                    ft.Column(
-                        controls=[
-                            AddGroupWidget(update_callback=update_list_controls),
-                            reorderable_list,
-                        ],
-                        expand=True
-                    ),
-                    ft.VerticalDivider(),
-                    ft.Column(
-                        controls=[
-                            max_time_to_choose,
-                            time_between,
-                            gaze_per_second,
-                            button_size,
-                            button_preview,
-                            ft.Row(
-                                controls=[
-                                    ft.Button(content="Load CSV", on_click=lambda _: page.run_task(loadCSV, page)),
-                                    ft.Button(content="Save To CSV", on_click=lambda _: page.run_task(saveExperimentToCSV, state)),
-                                    ft.Button(content="Go Back", on_click=lambda _: page.run_task(page.push_route, "/WordExperiment"),
-                                              ),
-                                ],
-                                alignment=ft.MainAxisAlignment.SPACE_EVENLY
-                            )
-                        ],
-                        expand=True,
-                    ),
-                ],
-                expand=True,
-            )
-        ],
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        vertical_alignment=ft.MainAxisAlignment.CENTER,
-        expand=True
-    )
+        self.max_time_to_choose = AppSettingsWidget(
+            setting=AppSettingsEnum.MAX_TIME_TO_CHOOSE,
+            value_picker=NumberPicker(minimum=0),
+            description="Maximum time to chose a word",
+            data=page.data.settings)
+        self.time_between = AppSettingsWidget(
+            setting=AppSettingsEnum.TIME_TO_WAIT_BETWEEN,
+            value_picker=NumberPicker(step=0.5, minimum=0),
+            description="Time to wait between 2 word groups",
+            data=page.data.settings)
+        self.gaze_per_second = AppSettingsWidget(
+            setting=AppSettingsEnum.GAZE_PER_SECOND,
+            value_picker=NumberPicker(step=1, minimum=0),
+            description="Number of gaze the app will try to make every second",
+            data=page.data.settings)
+        self.button_size = AppSettingsWidget(
+            setting=AppSettingsEnum.BUTTONS_SIZE,
+            value_picker=SliderPicker(),
+            description="Size of the buttons",
+            data=page.data.settings,
+            to_update=[self.button_preview]
+        )
+
+        self.controls = [ft.Row(
+            controls=[
+                ft.Column(
+                    controls=[
+                        AddGroupWidget(update_callback=self.update_list_controls),
+                        self.reorderable_list,
+                    ],
+                    expand=True
+                ),
+                ft.VerticalDivider(),
+                ft.Column(
+                    controls=[
+                        self.max_time_to_choose,
+                        self.time_between,
+                        self.gaze_per_second,
+                        self.button_size,
+                        self.button_preview,
+                        ft.Row(
+                            controls=[
+                                ft.Button(content="Load CSV", on_click=lambda _: page.run_task(loadCSV, page)),
+                                ft.Button(content="Save To CSV", on_click=lambda _: page.run_task(saveExperimentToCSV, state)),
+                                ft.Button(content="Go Back", on_click=lambda _: page.run_task(page.push_route, "/WordExperiment"),
+                                          ),
+                            ],
+                            alignment=ft.MainAxisAlignment.SPACE_EVENLY
+                        )
+                    ],
+                    expand=True,
+                ),
+            ],
+            expand=True,
+        )
+        ]
+        self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+        self.vertical_alignment = ft.MainAxisAlignment.CENTER
+        self.expand = True
+
+    def update_list_controls(self):
+        self.reorderable_list.controls = []
+        for index, group in enumerate(self.state.word_groups):
+            self.reorderable_list.controls.append(GroupCustomization(group_index=index, word_group=group, update_callback=self.update_list_controls))
 
 
 @ft.control
@@ -199,9 +202,6 @@ class SoundPicker(ft.Container):
     def build(self):
         self.choose_sound_button.on_click = lambda _: self.page.run_task(self.choose_sound)
         self.play_sound_button.on_click = lambda _: self.page.run_task(self.play_sound)
-
-
-
 
     async def play_sound(self):
         await playSound(self.word_group.sound)

@@ -5,20 +5,19 @@ from ui.AppState import AppState
 from ui.FletUtils import saveResultsToCSV, loadCSV, playSound
 from utils.config import SCREEN_HEIGHT, SCREEN_WIDTH
 
+
 @ft.control
-class tabWidget(ft.Container):
+class WordsWidget(ft.Container):
     """Left part of a word_group widget, with words or points"""
 
     def __init__(self, data, size, font: ft.FontWeight, spacing, border_width, border_color, is_score: bool = False, **kwargs):
         super().__init__(**kwargs)
 
-
-
         words = []
         for o in data:
             words.append(str(o))
 
-        self.content=ft.Column(
+        self.content = ft.Column(
             controls=[
                 ft.Row(
                     controls=[ft.Text(words[0], size=size, weight=font),
@@ -37,14 +36,13 @@ class tabWidget(ft.Container):
             spacing=spacing,
             data=is_score
         )
-        self.border=ft.Border.all(border_width, border_color)
-        self.expand=1
-        self.aspect_ratio=1
-
+        self.border = ft.Border.all(border_width, border_color)
+        self.expand = 1
+        self.aspect_ratio = 1
 
 
 @ft.control
-class data_widget(ft.Column):
+class DataWidget(ft.Column):
     """Right half of a word_group widget, with the sound, the gaze points and time took to click"""
 
     def __init__(self, res, page: ft.Page, **kwargs):
@@ -71,7 +69,7 @@ class data_widget(ft.Column):
             ,
             ft.Row(
                 controls=[
-                    tabWidget(res.gaze_score, 18, ft.FontWeight.W_600, 8, 4, ft.Colors.BLUE),
+                    WordsWidget(res.gaze_score, 18, ft.FontWeight.W_600, 8, 4, ft.Colors.BLUE),
                     ft.Column(
                         controls=[
                             ft.Text(str(res.gaze_score[4]) + " gazes failed", size=14, weight=ft.FontWeight.W_600,
@@ -96,29 +94,32 @@ class data_widget(ft.Column):
 def switch_infos(word_tab_widget: ft.Control, res: GroupResults, page):
     """Switch the main tab between the 4 words and a visualization of where the user looked"""
     if word_tab_widget.content.data:
-        word_tab_widget.content = tabWidget(res.words.words, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.BLUE, False).content
+        word_tab_widget.content = WordsWidget(res.words.words, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.BLUE, False).content
         page.update()
     else:
-        word_tab_widget.content = points_canva(page, res)
+        word_tab_widget.content = PointsCanva(page, res)
         page.update()
 
     word_tab_widget.on_click = lambda _: switch_infos(word_tab_widget, res, page)
 
 
-def res_widget(page, res):
+@ft.control
+class ResWidget(ft.Container):
     """Widget used to show results of a single word_group"""
-    word_tab_widget = tabWidget(res.words.words, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.BLUE)
 
-    word_tab_widget.aspect_ratio = 1
-    word_tab_widget.ink = True
+    def __init__(self, page: ft.Page, res: GroupResults, **kwargs):
+        super().__init__(**kwargs)
 
-    word_tab_widget.on_click = lambda _: switch_infos(word_tab_widget, res, page)
+        word_tab_widget = WordsWidget(res.words.words, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.BLUE)
 
-    res_data_widget = data_widget(res, page)
+        word_tab_widget.aspect_ratio = 1
+        word_tab_widget.ink = True
 
-    # Group Result
-    return ft.Container(
-        content=ft.Row(
+        word_tab_widget.on_click = lambda _: switch_infos(word_tab_widget, res, page)
+
+        res_data_widget = DataWidget(res, page)
+
+        self.content = ft.Row(
             controls=[
                 # TabWidget : Words
                 word_tab_widget,
@@ -128,29 +129,32 @@ def res_widget(page, res):
             alignment=ft.MainAxisAlignment.CENTER,
             vertical_alignment=ft.CrossAxisAlignment.CENTER, expand_loose=True,
             spacing=50,
-        ),
-        border=ft.Border.all(10, ft.Colors.BLUE_ACCENT),
-        expand=1,
-        margin=ft.Margin.symmetric(horizontal=20)
-    )
+        )
+        self.border = ft.Border.all(10, ft.Colors.BLUE_ACCENT)
+        self.expand = 1
+        self.margin = ft.Margin.symmetric(horizontal=20)
 
 
 canvas = []
 
 
-def points_canva(page, res):
-    canva = cv.Canvas(
-        on_resize=handle_resize,
-        data=(res, page)
-    )
+@ft.control
+class PointsCanva(ft.Container):
+    def __init__(self, page, res, **kwargs):
+        super().__init__(**kwargs)
 
-    canvas.append(canva)
+        canva = cv.Canvas(
+            on_resize=handle_resize,
+            data=(res, page)
+        )
 
-    return ft.Container(content=canva,
-                        border=ft.Border.all(6, ft.Colors.BLUE),
-                        expand=1,
-                        aspect_ratio=1,
-                        data=True)
+        canvas.append(canva)
+
+        self.content = canva
+        self.border = ft.Border.all(6, ft.Colors.BLUE)
+        self.expand = 1
+        self.aspect_ratio = 1
+        self.data = True
 
 
 def handle_resize(e):
@@ -184,23 +188,25 @@ def handle_resize(e):
     page.update()
 
 
-def ResultScreenView(page: ft.Page, state: AppState):
+@ft.control
+class ResultScreenView(ft.View):
     """Returns a view to show all the results of an experiment"""
 
-    widget_list = [
-        res_widget(page, res)
-        for res in state.results
-    ]
+    def __init__(self, page: ft.Page, state: AppState, **kwargs):
+        super().__init__(**kwargs)
+        widget_list = [
+            ResWidget(page, res)
+            for res in state.results
+        ]
 
-    page.update()
+        page.update()
 
-    height = page.height
+        height = page.height
 
-    if height is None:
-        height = 0
+        if height is None:
+            height = 0
 
-    return ft.View(
-        controls=[
+        self.controls = [
             ft.ListView(controls=[ft.Column(
                 controls=widget_list,
                 expand=True,
@@ -224,7 +230,6 @@ def ResultScreenView(page: ft.Page, state: AppState):
                 ),
 
             ]),
-        ],
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        vertical_alignment=ft.MainAxisAlignment.CENTER,
-    )
+        ]
+        self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+        self.vertical_alignment = ft.MainAxisAlignment.CENTER
