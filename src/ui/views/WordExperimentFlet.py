@@ -24,7 +24,7 @@ def WordExperimentView(page: ft.Page, state: AppState):
     words = [
         ft.Container(
             content=ft.Button(
-                content=ft.Text(word),
+                content=ft.Text(word, size=76 * state.settings.buttons_size),
                 width=quarter_width,
                 height=quarter_height,
                 on_click=lambda _, i=index: page.run_task(exp.next_words, i)

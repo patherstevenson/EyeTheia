@@ -151,7 +151,6 @@ class PointsCanva(ft.Container):
         canvas.append(canva)
 
         self.content = canva
-        self.border = ft.Border.all(6, ft.Colors.BLUE)
         self.expand = 1
         self.aspect_ratio = 1
         self.data = True

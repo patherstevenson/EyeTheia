@@ -513,7 +513,7 @@ class ButtonSizePreview(ft.Container):
         self.aspect_ratio = 16 / 9
         self.buttons = [
             ft.Container(
-                content=ft.Button(content=content),
+                content=ft.Button(content=ft.Text(content, size=76 * self.size)),
                 expand=1,
                 alignment=ft.Alignment.CENTER,
             )
@@ -553,6 +553,8 @@ class ButtonSizePreview(ft.Container):
         for button in self.buttons:
             button.content.width = max((self.width or 1920) / 2, 200) * self.size * 0.95
             button.content.height = max((self.height or 1080) / 2, 140) * self.size * 0.95
+
+            button.content.content.size = 76 * self.size
 
     def handle_resize(self, e):
         self.width = e.width
