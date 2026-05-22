@@ -67,7 +67,7 @@ def WordExperimentView(page: ft.Page, state: AppState):
         page.update()
 
     async def show_word_group():
-        """Show the 4 words of the current word_group in 4 buttons, each ones in a quater of the screen, with a size set in AppSettings"""
+        """Show the 4 words of the current word_group in 4 buttons, each one in a quater of the screen, with a size set in AppSettings"""
         current_words = exp.get_current_words()
 
         for word_index, button in enumerate(words):
