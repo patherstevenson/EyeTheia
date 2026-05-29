@@ -9,9 +9,16 @@ class HeatMapView(ft.View):
     def __init__(self, page: ft.Page, state: AppState, **kwargs):
         super().__init__(**kwargs)
 
+        self.built = False
+
         self.canva = cv.Canvas(expand=True,
-                               shapes=[]
+                               # width=1920,
+                               # height=1080,
+                               shapes=[],
                                )
+
+        self.on_size_change = self.handle_resize
+        self.show_words: bool = True
 
         self.index = 0
 
@@ -19,19 +26,49 @@ class HeatMapView(ft.View):
 
         self.controls = [
             self.canva,
-            ft.Button(content="Hi !",
-                      on_click=lambda _: page.run_task(page.push_route, "/Personalize")),
-            ft.Button(content="Next Group",
-                      on_click=self.next_group),
-            ft.Button(content="Previous Group",
-                      on_click=self.previous_group),
+            ft.Row(controls=[
+                ft.Button(content="Back To Main Menu",
+                          on_click=lambda _: page.run_task(page.push_route, "/Personalize")),
+                ft.Button(content="<- Previous Group",
+                          on_click=self.previous_group),
+                ft.Button(content="Next Group ->",
+                          on_click=self.next_group),
+            ]),
         ]
+
+    def handle_resize(self, e):
+        self.width = e.width
+        self.height = e.height
+        print("Ca a resize là")
+        print(e.control.width)
+
+        if self.built:
+            self.canva.height = e.page.window.height * 0.9
+            e.control.update()
+
+    def build(self):
+        self.built = True
 
     def draw_heatmap(self, state: AppState = None):
         if state is None:
-            state = self.page.data
+            state: AppState = self.page.data
 
         self.canva.shapes.clear()
+
+        if self.show_words:
+            # half_width = self.page.window.width / 2
+            # half_height = self.page.window.height / 2
+            half_width = 860
+            half_height = 540
+
+            print(self.width)
+
+            cv.Text(
+                x=half_width / 2,
+                y=half_height / 2,
+                value=state.results[self.index].words.words[0],
+            )
+
         for pt in state.results[self.index].gaze_points:
             paint_heatmap = ft.Paint(
                 gradient=ft.PaintRadialGradient(
@@ -58,7 +95,6 @@ class HeatMapView(ft.View):
             self.index += 1
             self.draw_heatmap()
             self.update()
-
 
     def previous_group(self):
         state: AppState = self.page.data
