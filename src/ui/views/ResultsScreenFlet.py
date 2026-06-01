@@ -158,21 +158,27 @@ class WordPreview(ft.Column):
     def __init__(self, words, size, font: ft.FontWeight, spacing, **kwargs):
         super().__init__(**kwargs)
 
-        self.controls = [ft.Row(
-            controls=[ft.Text(words[0], size=size, weight=font),
-                      ft.Text(words[1], size=size, weight=font)],
-            alignment=ft.MainAxisAlignment.SPACE_EVENLY,
-
-        ),
+        self.controls = [
             ft.Row(
-                controls=[ft.Text(words[2], size=size, weight=font),
-                          ft.Text(words[3], size=size, weight=font)],
-                alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+                controls=[
+                    ft.Text(words[0], size=size, weight=font),
+                    ft.Text(words[1], size=size, weight=font)
+                ],
+                alignment=ft.MainAxisAlignment.SPACE_AROUND,
+                expand=1
+            ),
+            ft.Row(
+                controls=[
+                    ft.Text(words[2], size=size, weight=font),
+                    ft.Text(words[3], size=size, weight=font)
+                ],
+                alignment=ft.MainAxisAlignment.SPACE_AROUND,
+                expand=1
             )
         ]
         self.alignment = ft.MainAxisAlignment.CENTER
         self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-        self.spacing = spacing
+        # self.spacing = spacing
         self.expand = 1
         self.aspect_ratio = 1
 
