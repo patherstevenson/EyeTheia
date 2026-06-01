@@ -38,7 +38,7 @@ class PersonalizeView(ft.View):
             show_default_drag_handles=False,
             controls=[],
             expand=1,
-            auto_scroll=True,
+            # auto_scroll=True,
             height=page.height,
             on_reorder=lambda e: self.handle_reorder(e, state, self.update_list_controls),
             on_size_change=lambda e: self.handle_size_change(e)
@@ -110,10 +110,12 @@ class PersonalizeView(ft.View):
         self.vertical_alignment = ft.MainAxisAlignment.CENTER
         self.expand = True
 
-    def update_list_controls(self):
+    def update_list_controls(self, go_down: bool = False):
         self.reorderable_list.controls = []
         for index, group in enumerate(self.state.word_groups):
             self.reorderable_list.controls.append(GroupCustomization(group_index=index, word_group=group, update_callback=self.update_list_controls))
+        if go_down:
+            self.page.run_task(self.reorderable_list.scroll_to, offset=-1, duration=10)
 
 
 @ft.control
@@ -127,7 +129,8 @@ class AddGroupWidget(ft.IconButton):
 
     def handle_click(self):
         self.page.data.word_groups.append(WordGroup())
-        self.update_callback()
+
+        self.update_callback(True)
 
 
 @ft.control
