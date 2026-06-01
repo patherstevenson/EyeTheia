@@ -48,15 +48,17 @@ async def main(page: ft.Page):
         match e.route:
             case "/":
                 page.views.append(MainMenuView(page, state))
+                page.title = "WordTest"
             case "/WordExperiment":
                 page.views.append(WordExperimentView(page, state))
                 page.window.maximized = True
+                page.title = "Word Experiment"
             case "/Results":
                 page.views.append(ResultScreenView(page, state))
+                page.title = "Experiment Results"
             case "/Personalize":
                 page.views.append(PersonalizeView(page, state))
-            case "/HeatMap":
-                page.views.append(HeatMapView(page, state))
+                page.title = "Personalization of Word Experiment"
             case _:
                 page.views.append(ft.View(controls=[ft.Column(controls=[
                     ft.Text("No page found"), ft.Button(content="Go Back to Main Menu",

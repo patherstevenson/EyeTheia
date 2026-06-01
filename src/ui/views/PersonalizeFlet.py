@@ -112,7 +112,6 @@ class PersonalizeView(ft.View):
         self.expand = True
 
     async def save_experience(self, state: AppState):
-        # Todo : Check if datas are corrects
         if self.check_values():
             await saveExperimentToCSV(state)
 
