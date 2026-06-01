@@ -120,7 +120,15 @@ class PersonalizeView(ft.View):
         for e in self.reorderable_list.controls:
             if isinstance(e, GroupCustomization):
                 if not e.check_values():
+                    snackbar = ft.SnackBar(
+                        content=ft.Text("Some groups have empty words"),
+                        duration=2000,
+                        behavior=ft.SnackBarBehavior.FLOATING
+                    )
+                    self.page.show_dialog(snackbar)
+
                     return False
+
         return True
 
     async def go_back(self):
