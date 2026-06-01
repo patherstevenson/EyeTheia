@@ -73,44 +73,64 @@ class PersonalizeView(ft.View):
             to_update=[self.button_preview]
         )
 
-        self.controls = [ft.Row(
-            controls=[
-                ft.Column(
-                    controls=[
-                        AddGroupWidget(update_callback=self.update_list_controls),
-                        self.reorderable_list,
-                    ],
-                    expand=True
-                ),
-                ft.VerticalDivider(),
-                ft.Column(
-                    controls=[
-                        self.max_time_to_choose,
-                        self.time_between,
-                        self.gaze_per_second,
-                        self.button_size,
-                        self.button_preview,
-                        ft.Row(
-                            controls=[
-                                ft.Button(content="Load CSV", on_click=lambda _: page.run_task(loadCSV, page)),
-                                ft.Button(content="Save To CSV", on_click=lambda _: page.run_task(saveExperimentToCSV, state)),
-                                ft.Button(content="Go Back", on_click=lambda _: page.run_task(page.push_route, "/WordExperiment"),
-                                          ),
-                            ],
-                            alignment=ft.MainAxisAlignment.SPACE_EVENLY
-                        )
-                    ],
-                    expand=True,
-                ),
-            ],
-            expand=True,
-        )
+        self.controls = [
+            ft.Row(
+                controls=[
+                    ft.Column(
+                        controls=[
+                            AddGroupWidget(update_callback=self.update_list_controls),
+                            self.reorderable_list,
+                        ],
+                        expand=True
+                    ),
+                    ft.VerticalDivider(),
+                    ft.Column(
+                        controls=[
+                            self.max_time_to_choose,
+                            self.time_between,
+                            self.gaze_per_second,
+                            self.button_size,
+                            self.button_preview,
+                            ft.Row(
+                                controls=[
+                                    ft.Button(content="Load CSV", on_click=lambda _: page.run_task(loadCSV, page)),
+                                    ft.Button(content="Save To CSV", on_click=lambda _: page.run_task(self.save_experience, state)),
+                                    ft.Button(content="Go Back", on_click=lambda _: page.run_task(self.go_back),
+                                              ),
+                                ],
+                                alignment=ft.MainAxisAlignment.SPACE_EVENLY
+                            )
+                        ],
+                        expand=True,
+                    ),
+                ],
+                expand=True,
+            )
         ]
         self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
         self.vertical_alignment = ft.MainAxisAlignment.CENTER
         self.expand = True
 
+    async def save_experience(self, state: AppState):
+        # Todo : Check if datas are corrects
+        if self.check_values():
+            await saveExperimentToCSV(state)
+
+    def check_values(self):
+        for e in self.reorderable_list.controls:
+            if isinstance(e, GroupCustomization):
+                if not e.check_values():
+                    return False
+        return True
+
+    async def go_back(self):
+        await self.page.push_route("/WordExperiment")
+
     def update_list_controls(self, go_down: bool = False):
+        """Update (or initiate) GroupCustomization widgets is the list
+        :param go_down: Whether the list should scroll to the last element, default to False
+        :type go_down: bool
+        """
         self.reorderable_list.controls = []
         for index, group in enumerate(self.state.word_groups):
             self.reorderable_list.controls.append(GroupCustomization(group_index=index, word_group=group, update_callback=self.update_list_controls))
@@ -277,6 +297,12 @@ class GroupCustomization(ft.Container):
 
     def remove_word_group(self):
         self.page.data.word_groups.remove(self.word_group)
+
+    def check_values(self):
+        for word in self.word_group.words:
+            if word == "":
+                return False
+        return True
 
 
 @ft.control
