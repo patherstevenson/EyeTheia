@@ -117,22 +117,25 @@ class PersonalizeView(ft.View):
             await saveExperimentToCSV(state)
 
     def check_values(self):
+        val = True
         for e in self.reorderable_list.controls:
             if isinstance(e, GroupCustomization):
                 if not e.check_values():
-                    snackbar = ft.SnackBar(
-                        content=ft.Text("Some groups have empty words"),
-                        duration=2000,
-                        behavior=ft.SnackBarBehavior.FLOATING
-                    )
-                    self.page.show_dialog(snackbar)
+                    val = False
 
-                    return False
+        if not val:
+            snackbar = ft.SnackBar(
+                content=ft.Text("Some groups have empty words"),
+                duration=2000,
+                behavior=ft.SnackBarBehavior.FLOATING
+            )
+            self.page.show_dialog(snackbar)
 
-        return True
+        return val
 
     async def go_back(self):
-        await self.page.push_route("/WordExperiment")
+        if self.check_values():
+            await self.page.push_route("/WordExperiment")
 
     def update_list_controls(self, go_down: bool = False):
         """Update (or initiate) GroupCustomization widgets is the list
@@ -307,10 +310,20 @@ class GroupCustomization(ft.Container):
         self.page.data.word_groups.remove(self.word_group)
 
     def check_values(self):
+        res = True
         for word in self.word_group.words:
             if word == "":
-                return False
-        return True
+                res = False
+                self.alert_empty()
+
+        return res
+
+    def alert_empty(self):
+        for tile in self.word_picker.tiles:
+            if tile.text_field.value == "":
+                tile.text_field.border_color = ft.Colors.RED
+
+        self.page.update()
 
 
 @ft.control
@@ -324,6 +337,7 @@ class WordPicker(ft.Column):
 
         self.expand = True
         self.validate_words()
+        self.tiles: list[DragTile] = []
         self.build_grid()
         self.on_word_change = on_word_change
 
@@ -335,14 +349,14 @@ class WordPicker(ft.Column):
             )
 
     def build_grid(self):
-        tiles = [
+        self.tiles = [
             DragTile(self.word_group.words[index], index, self.handle_swap, self.handle_change_word)
             for index, word in enumerate(self.word_group.words)
         ]
 
         self.controls = [
-            ft.Row(controls=tiles[:2], expand=True),
-            ft.Row(controls=tiles[2:4], expand=True),
+            ft.Row(controls=self.tiles[:2], expand=True),
+            ft.Row(controls=self.tiles[2:4], expand=True),
         ]
 
     def handle_swap(self, e: ft.DragTargetEvent):
@@ -362,21 +376,16 @@ class WordPicker(ft.Column):
 @ft.control
 class DragTile(ft.DragTarget):
     def __init__(self, word: str, index: int, on_swap, on_change, **kwargs):
-        text_field = ft.TextField(
+        self.text_field = ft.TextField(
             value=word,
             on_change=lambda e, tile_index=index: on_change(tile_index, e.control.value),
             expand=True,
         )
 
+        self.container = ft.Container(expand=True, content=self.text_field, width=100, height=100, alignment=ft.Alignment.CENTER, )
         content = ft.Draggable(
             expand=True,
-            content=ft.Container(
-                expand=True,
-                content=text_field,
-                width=100,
-                height=100,
-                alignment=ft.Alignment.CENTER,
-            ),
+            content=self.container,
             data=index,
         )
 
