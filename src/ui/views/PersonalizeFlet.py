@@ -320,8 +320,10 @@ class GroupCustomization(ft.Container):
 
     def alert_empty(self):
         for tile in self.word_picker.tiles:
-            if tile.text_field.value == "":
-                tile.text_field.border_color = ft.Colors.RED
+            if tile.text_field.content.value == "":
+                # tile.text_field.border_color = ft.Colors.RED
+                # tile.text_field.border_width = 3
+                tile.text_field.border = ft.Border.all(3, ft.Colors.RED)
 
         self.page.update()
 
@@ -376,10 +378,17 @@ class WordPicker(ft.Column):
 @ft.control
 class DragTile(ft.DragTarget):
     def __init__(self, word: str, index: int, on_swap, on_change, **kwargs):
-        self.text_field = ft.TextField(
-            value=word,
-            on_change=lambda e, tile_index=index: on_change(tile_index, e.control.value),
-            expand=True,
+        self.text_field = ft.Container(
+            content=ft.TextField(
+                value=word,
+                on_change=lambda e, tile_index=index: on_change(tile_index, e.control.value),
+                expand=True,
+                border = ft.InputBorder.NONE,
+            ),
+            padding=ft.Padding().all(5),
+            border = ft.Border.all(1, ft.Colors.BLACK),
+            border_radius = ft.BorderRadius.all(5),
+            animate=ft.Animation(duration=1000, curve=ft.AnimationCurve.BOUNCE_IN_OUT)
         )
 
         self.container = ft.Container(expand=True, content=self.text_field, width=100, height=100, alignment=ft.Alignment.CENTER, )

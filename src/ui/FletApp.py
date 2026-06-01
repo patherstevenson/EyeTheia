@@ -36,7 +36,7 @@ async def main(page: ft.Page):
     page.data = state
     page.window.maximized = True
 
-    page.window.prevent_close
+    # page.window.prevent_close
 
     # page.window.always_on_top = True
 
