@@ -38,18 +38,15 @@ class ExperiencePreview(ft.Container):
 
 
 @ft.control
-class PointsCanva(ft.Container):
+class PointsCanva(cv.Canvas):
     def __init__(self, res: GroupResults, **kwargs):
         super().__init__(**kwargs)
 
         self.res = res
         self.built = False
 
-        self.canva = cv.Canvas(
-            on_resize=self.handle_resize
-        )
+        self.on_resize = self.handle_resize
 
-        self.content = self.canva
         self.expand = 1
         self.aspect_ratio = 16 / 9
         self.data = True
@@ -66,6 +63,8 @@ class PointsCanva(ft.Container):
             page = self.page
 
             shapes = []
+
+            shapes.extend(words_in_canva(res=self.res, canva_width=canva_width, canva_height=canva_height))
 
             old_x = -1
             old_y = -1
@@ -112,6 +111,8 @@ class HeatMap(cv.Canvas):
     def draw_heatmap(self):
         self.shapes.clear()
 
+        self.shapes.extend(words_in_canva(res=self.res, canva_width=self.canva_width, canva_height=self.canva_height))
+
         for pt in self.res.gaze_points:
             x = round((pt.x / SCREEN_WIDTH) * self.canva_width)
             y = round((pt.y / SCREEN_HEIGHT) * self.canva_height)
@@ -134,6 +135,22 @@ class HeatMap(cv.Canvas):
                     x, y, 50, paint=paint_heatmap
                 )
             )
+
+
+def words_in_canva(res, canva_width, canva_height):
+    shapes = []
+
+    quarter_width = round(canva_width / 4)
+    quarter_height = round(canva_height / 4)
+
+    text_style = ft.TextStyle(size=50)
+
+    shapes.append(cv.Text(value=res.words.words[0], x=quarter_width, y=quarter_height, alignment=ft.Alignment.CENTER, style=text_style))
+    shapes.append(cv.Text(value=res.words.words[1], x=quarter_width * 3, y=quarter_height, alignment=ft.Alignment.CENTER, style=text_style))
+    shapes.append(cv.Text(value=res.words.words[2], x=quarter_width, y=quarter_height * 3, alignment=ft.Alignment.CENTER, style=text_style))
+    shapes.append(cv.Text(value=res.words.words[3], x=quarter_width * 3, y=quarter_height * 3, alignment=ft.Alignment.CENTER, style=text_style))
+
+    return shapes
 
 
 @ft.control
