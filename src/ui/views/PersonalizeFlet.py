@@ -5,6 +5,7 @@ from experiments.wordExperiment.WordGroup import WordGroup
 from ui.AppSettings import AppSettingsEnum
 from ui.AppState import AppState
 from ui.FletUtils import playSound, loadCSV, saveExperimentToCSV
+from utils.config import TEXT_SIZE
 
 WORDS_PER_GROUP = 4
 
@@ -41,7 +42,8 @@ class PersonalizeView(ft.View):
             # auto_scroll=True,
             height=page.height,
             on_reorder=lambda e: self.handle_reorder(e, state, self.update_list_controls),
-            on_size_change=lambda e: self.handle_size_change(e)
+            on_size_change=lambda e: self.handle_size_change(e),
+            footer=AddGroupWidget(update_callback=self.update_list_controls),
         )
 
         self.state = state
@@ -78,7 +80,6 @@ class PersonalizeView(ft.View):
                 controls=[
                     ft.Column(
                         controls=[
-                            AddGroupWidget(update_callback=self.update_list_controls),
                             self.reorderable_list,
                         ],
                         expand=True
@@ -149,13 +150,27 @@ class PersonalizeView(ft.View):
 
 
 @ft.control
-class AddGroupWidget(ft.IconButton):
+class AddGroupWidget(ft.Container):
     def __init__(self, update_callback, **kwargs):
         self.update_callback = update_callback
         super().__init__(**kwargs)
+
+        self.content = ft.Row(
+            controls=[
+                ft.Text(value="Add New Word Group", size=12 * TEXT_SIZE, weight=ft.FontWeight.W_600),
+                ft.Icon(
+                    icon=ft.Icons.ADD_BOX,
+                    color=ft.Colors.BLUE,
+                )
+            ],
+            expand=True,
+            alignment=ft.MainAxisAlignment.CENTER
+        )
+        self.border = ft.Border.all(1, ft.Colors.BLUE)
+        self.bgcolor = ft.Colors.LIGHT_BLUE_ACCENT_100
+        self.border_radius = ft.BorderRadius.all(10)
         self.on_click = self.handle_click
-        self.icon = ft.Icons.ADD_BOX
-        self.icon_color = ft.Colors.BLUE
+        self.ink = True
 
     def handle_click(self):
         self.page.data.word_groups.append(WordGroup())
@@ -382,11 +397,11 @@ class DragTile(ft.DragTarget):
                 value=word,
                 on_change=lambda e, tile_index=index: on_change(tile_index, e.control.value),
                 expand=True,
-                border = ft.InputBorder.NONE,
+                border=ft.InputBorder.NONE,
             ),
             padding=ft.Padding().all(5),
-            border = ft.Border.all(1, ft.Colors.BLACK),
-            border_radius = ft.BorderRadius.all(5),
+            border=ft.Border.all(1, ft.Colors.BLACK),
+            border_radius=ft.BorderRadius.all(5),
             animate=ft.Animation(duration=1000, curve=ft.AnimationCurve.BOUNCE_IN_OUT)
         )
 
