@@ -269,6 +269,11 @@ class ResWidget(ft.Container):
         self.margin = ft.Margin.symmetric(horizontal=20)
 
 
+def handle_size_change(e):
+    e.control.height = e.page.window.height - 100
+    e.control.update()
+
+
 @ft.control
 class ResultScreenView(ft.View):
     """Returns a view to show all the results of an experiment"""
@@ -288,29 +293,27 @@ class ResultScreenView(ft.View):
             height = 0
 
         self.controls = [
-            ft.ListView(controls=[ft.Column(
+            ft.ListView(
                 controls=widget_list,
                 expand=True,
-                alignment=ft.MainAxisAlignment.CENTER,
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            )],
+                on_size_change=lambda e: handle_size_change(e),
                 auto_scroll=True,
                 height=height - 100, ),
             ft.Row(controls=[
                 ft.Button(
                     content="Go Back To Main Menu",
                     on_click=lambda _: page.run_task(page.push_route, "/"),
-                    scale = TEXT_SIZE
+                    scale=TEXT_SIZE
                 ),
                 ft.Button(
                     content="Save to CSV",
                     on_click=lambda _: page.run_task(saveResultsToCSV, state),
-                    scale = TEXT_SIZE
+                    scale=TEXT_SIZE
                 ),
                 ft.Button(
                     content="Load CSV",
                     on_click=lambda _: page.run_task(loadCSV, page),
-                    scale = TEXT_SIZE
+                    scale=TEXT_SIZE
                 ),
 
             ]),
