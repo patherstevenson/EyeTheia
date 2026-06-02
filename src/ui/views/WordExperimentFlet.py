@@ -4,10 +4,11 @@ import flet as ft
 from experiments.wordExperiment.WordExperiment import WordExperiment
 from ui.AppState import AppState
 from ui.FletUtils import playSound
+from utils.config import TEXT_SIZE
 
 
 def WordExperimentView(page: ft.Page, state: AppState):
-    app_scale = 1.5
+    app_scale = 1.5 * TEXT_SIZE
 
     exp = WordExperiment(state)
 
@@ -24,7 +25,7 @@ def WordExperimentView(page: ft.Page, state: AppState):
     words = [
         ft.Container(
             content=ft.Button(
-                content=ft.Text(word, size=76 * state.settings.buttons_size),
+                content=ft.Text(word, size=76 * state.settings.buttons_size * TEXT_SIZE),
                 width=quarter_width,
                 height=quarter_height,
                 on_click=lambda _, i=index: page.run_task(exp.next_words, i)

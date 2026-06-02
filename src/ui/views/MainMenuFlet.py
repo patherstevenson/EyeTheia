@@ -1,5 +1,6 @@
 import flet as ft
 from ui.AppState import AppState
+from utils.config import TEXT_SIZE
 
 
 @ft.control
@@ -14,9 +15,11 @@ class MoveToButton(ft.Button):
 
 
 def MainMenuView(page: ft.Page, state: AppState):
-    buttons_scale = 1.5
+    buttons_scale = 1.5 * TEXT_SIZE
 
     buttons = [
+        ft.Text(value="Eyetheia Test", size = 100 * TEXT_SIZE)
+        ,
         ft.Button(
             content="Calibration",
             on_click=state.gaze_manager.calibrate,
@@ -37,11 +40,11 @@ def MainMenuView(page: ft.Page, state: AppState):
             direction="/Personalize",
             scale=buttons_scale
         ),
-        MoveToButton(
-            content="HeatMap",
-            direction="/HeatMap",
-            scale=buttons_scale
-        ),
+        # MoveToButton(
+        #     content="HeatMap",
+        #     direction="/HeatMap",
+        #     scale=buttons_scale
+        # ),
 
     ]
 

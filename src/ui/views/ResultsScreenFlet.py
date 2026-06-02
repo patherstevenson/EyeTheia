@@ -3,7 +3,7 @@ import flet.canvas as cv
 from experiments.wordExperiment.GroupResults import GroupResults
 from ui.AppState import AppState
 from ui.FletUtils import saveResultsToCSV, loadCSV, playSound
-from utils.config import SCREEN_HEIGHT, SCREEN_WIDTH
+from utils.config import SCREEN_HEIGHT, SCREEN_WIDTH, TEXT_SIZE
 
 
 @ft.control
@@ -12,7 +12,7 @@ class ExperiencePreview(ft.Container):
         super().__init__(**kwargs)
 
         self.word_preview = WordPreview(words=res.words.words, size=24, font=ft.FontWeight.W_600, spacing=16)
-        self.points_preview = PointsCanva(res)
+        self.trajectories_preview = TrajectoriesPreview(res)
         self.heatmap = HeatMap(res)
 
         self.content = self.word_preview
@@ -30,7 +30,7 @@ class ExperiencePreview(ft.Container):
         if self.state == 0:
             self.content = self.word_preview
         elif self.state == 1:
-            self.content = self.points_preview
+            self.content = self.trajectories_preview
         elif self.state == 2:
             self.content = self.heatmap
 
@@ -38,7 +38,7 @@ class ExperiencePreview(ft.Container):
 
 
 @ft.control
-class PointsCanva(cv.Canvas):
+class TrajectoriesPreview(cv.Canvas):
     def __init__(self, res: GroupResults, **kwargs):
         super().__init__(**kwargs)
 
@@ -69,7 +69,7 @@ class PointsCanva(cv.Canvas):
             old_x = -1
             old_y = -1
 
-            style = ft.TextStyle(size=10)
+            style = ft.TextStyle(size=10 * TEXT_SIZE)
 
             for pt in self.res.gaze_points:
                 # stroke_paint = ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE, color=ft.Colors.random(exclude=[ft.Colors.WHITE, ft.Colors.GREY]))
@@ -143,7 +143,7 @@ def words_in_canva(res, canva_width, canva_height):
     quarter_width = round(canva_width / 4)
     quarter_height = round(canva_height / 4)
 
-    text_style = ft.TextStyle(size=50)
+    text_style = ft.TextStyle(size=50 * TEXT_SIZE)
 
     shapes.append(cv.Text(value=res.words.words[0], x=quarter_width, y=quarter_height, alignment=ft.Alignment.CENTER, style=text_style))
     shapes.append(cv.Text(value=res.words.words[1], x=quarter_width * 3, y=quarter_height, alignment=ft.Alignment.CENTER, style=text_style))
@@ -161,16 +161,16 @@ class WordPreview(ft.Column):
         self.controls = [
             ft.Row(
                 controls=[
-                    ft.Text(words[0], size=size, weight=font),
-                    ft.Text(words[1], size=size, weight=font)
+                    ft.Text(words[0], size=size * TEXT_SIZE, weight=font),
+                    ft.Text(words[1], size=size * TEXT_SIZE, weight=font)
                 ],
                 alignment=ft.MainAxisAlignment.SPACE_AROUND,
                 expand=1
             ),
             ft.Row(
                 controls=[
-                    ft.Text(words[2], size=size, weight=font),
-                    ft.Text(words[3], size=size, weight=font)
+                    ft.Text(words[2], size=size * TEXT_SIZE, weight=font),
+                    ft.Text(words[3], size=size * TEXT_SIZE, weight=font)
                 ],
                 alignment=ft.MainAxisAlignment.SPACE_AROUND,
                 expand=1
@@ -194,7 +194,7 @@ class DataWidget(ft.Column):
             ft.Container(
                 content=ft.Row(
                     controls=[
-                        ft.Text(res.words.sound, size=20, weight=ft.FontWeight.W_600),
+                        ft.Text(res.words.sound, size=20 * TEXT_SIZE, weight=ft.FontWeight.W_600),
                         ft.IconButton(
                             icon=ft.Icons.PLAY_ARROW,
                             icon_color=ft.Colors.BLUE,
@@ -217,10 +217,10 @@ class DataWidget(ft.Column):
                     ),
                     ft.Column(
                         controls=[
-                            ft.Text(str(res.gaze_score[4]) + " gazes failed", size=14, weight=ft.FontWeight.W_600,
+                            ft.Text(str(res.gaze_score[4]) + " gazes failed", size=14 * TEXT_SIZE, weight=ft.FontWeight.W_600,
                                     overflow=ft.TextOverflow.FADE),
                             ft.Divider(height=9, thickness=3),
-                            ft.Text(f"{round(res.total_time, 2)} seconds to choose", size=14, weight=ft.FontWeight.W_600,
+                            ft.Text(f"{round(res.total_time, 2)} seconds to choose", size=14 * TEXT_SIZE, weight=ft.FontWeight.W_600,
                                     overflow=ft.TextOverflow.FADE),
                         ],
                         expand=True,
@@ -299,15 +299,18 @@ class ResultScreenView(ft.View):
             ft.Row(controls=[
                 ft.Button(
                     content="Go Back To Main Menu",
-                    on_click=lambda _: page.run_task(page.push_route, "/")
+                    on_click=lambda _: page.run_task(page.push_route, "/"),
+                    scale = TEXT_SIZE
                 ),
                 ft.Button(
                     content="Save to CSV",
-                    on_click=lambda _: page.run_task(saveResultsToCSV, state)
+                    on_click=lambda _: page.run_task(saveResultsToCSV, state),
+                    scale = TEXT_SIZE
                 ),
                 ft.Button(
                     content="Load CSV",
-                    on_click=lambda _: page.run_task(loadCSV, page)
+                    on_click=lambda _: page.run_task(loadCSV, page),
+                    scale = TEXT_SIZE
                 ),
 
             ]),
