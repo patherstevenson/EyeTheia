@@ -1,4 +1,5 @@
 from typing import Callable
+import asyncio
 
 import flet as ft
 from experiments.wordExperiment.WordGroup import WordGroup
@@ -146,8 +147,11 @@ class PersonalizeView(ft.View):
         for index, group in enumerate(self.state.word_groups):
             self.reorderable_list.controls.append(GroupCustomization(group_index=index, word_group=group, update_callback=self.update_list_controls))
         if go_down:
-            self.page.run_task(self.reorderable_list.scroll_to, offset=-1, duration=10)
+            async def scroll_delayed():
+                await asyncio.sleep(0.05) # Un battement de cil pour laisser le rendu se faire
+                await self.reorderable_list.scroll_to(offset=-1)
 
+            self.page.run_task(scroll_delayed)
 
 @ft.control
 class AddGroupWidget(ft.Container):
