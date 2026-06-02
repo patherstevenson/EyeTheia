@@ -248,6 +248,7 @@ class SoundPicker(ft.Container):
         )
         self.border = ft.Border.all(1, ft.Colors.GREY)
         self.border_radius = ft.BorderRadius.all(15)
+        self.animate=ft.Animation(duration=1000, curve=ft.AnimationCurve.BOUNCE_IN_OUT)
 
         self.padding = ft.Padding.all(5)
 
@@ -329,6 +330,12 @@ class GroupCustomization(ft.Container):
 
     def check_values(self):
         res = True
+
+        if self.word_group.sound == "":
+            self.sound_picker.border = ft.Border.all(3, ft.Colors.RED)
+            res = False
+
+
         for word in self.word_group.words:
             if word == "":
                 res = False
