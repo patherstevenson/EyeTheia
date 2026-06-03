@@ -1,6 +1,7 @@
 import flet as ft
 import flet.canvas as cv
 from experiments.wordExperiment.GroupResults import GroupResults
+from setuptools.config import expand
 from ui.AppState import AppState
 from ui.FletUtils import saveResultsToCSV, loadCSV, playSound
 from utils.config import SCREEN_HEIGHT, SCREEN_WIDTH, TEXT_SIZE
@@ -188,6 +189,7 @@ class PlaySoundWidget(ft.Container):
             expand=True
         )
         self.border = ft.Border.all(4, ft.Colors.BLUE_ACCENT)
+        self.border_radius = ft.BorderRadius.all(15)
         self.expand = 1
 
 
@@ -200,6 +202,8 @@ class DataWidget(ft.Column):
 
         (secondary_preview, third_preview) = init_previews
 
+        style = ft.TextStyle(size=14 * TEXT_SIZE, weight=ft.FontWeight.W_600, overflow=ft.TextOverflow.FADE)
+
         self.controls = [
             ft.Container(
                 content=ft.Column(
@@ -207,11 +211,16 @@ class DataWidget(ft.Column):
                         PlaySoundWidget(res, page),
                         ft.Row(
                             controls=[
-                                ft.Text(str(res.gaze_score[4]) + " gazes failed", size=14 * TEXT_SIZE, weight=ft.FontWeight.W_600, overflow=ft.TextOverflow.FADE),
+                                ft.TextField(label="Gaze failed", value=str(res.gaze_score[4]), text_style=style, read_only=True, width=150),
                                 ft.VerticalDivider(width=9, thickness=3),
-                                ft.Text(f"{round(res.total_time, 2)} seconds to choose", size=14 * TEXT_SIZE, weight=ft.FontWeight.W_600, overflow=ft.TextOverflow.FADE),
+                                ft.TextField(label="Time to Choose", value=f"{round(res.total_time, 2)} seconds", text_style=style, read_only=True, width=150),
                                 ft.VerticalDivider(width=9, thickness=3),
-                                ft.Text(f"{res.screen_width} - {res.screen_height}", size=14 * TEXT_SIZE, weight=ft.FontWeight.W_600, overflow=ft.TextOverflow.FADE),
+                                ft.TextField(label="Window Resolution", value=f"{res.screen_width} - {res.screen_height}", text_style=style, read_only=True, width=150),
+
+
+
+
+
 
                             ],
                             alignment=ft.MainAxisAlignment.SPACE_EVENLY,
@@ -265,8 +274,10 @@ class WordGroupResWidget(ft.Container):
             spacing=50,
         )
         self.border = ft.Border.all(10, ft.Colors.BLUE_ACCENT)
+        self.border_radius = ft.BorderRadius.all(5)
         self.expand = 1
-        self.margin = ft.Margin.symmetric(horizontal=20)
+        self.margin = ft.Margin.symmetric(horizontal=20, vertical=5)
+        self.padding = ft.Padding.all(5)
 
     def handle_click(self, e):
         self.state += 1
