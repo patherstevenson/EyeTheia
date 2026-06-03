@@ -195,29 +195,36 @@ class PlaySoundWidget(ft.Container):
 class DataWidget(ft.Column):
     """Right half of a word_group widget, with the sound, the gaze points and time took to click"""
 
-    def __init__(self, res, page: ft.Page, init_previews, **kwargs):
+    def __init__(self, res: GroupResults, page: ft.Page, init_previews, **kwargs):
         super().__init__(**kwargs)
 
         (secondary_preview, third_preview) = init_previews
 
         self.controls = [
-            PlaySoundWidget(res, page),
+            ft.Container(
+                content=ft.Column(
+                    controls=[
+                        PlaySoundWidget(res, page),
+                        ft.Row(
+                            controls=[
+                                ft.Text(str(res.gaze_score[4]) + " gazes failed", size=14 * TEXT_SIZE, weight=ft.FontWeight.W_600, overflow=ft.TextOverflow.FADE),
+                                ft.VerticalDivider(width=9, thickness=3),
+                                ft.Text(f"{round(res.total_time, 2)} seconds to choose", size=14 * TEXT_SIZE, weight=ft.FontWeight.W_600, overflow=ft.TextOverflow.FADE),
+                                ft.VerticalDivider(width=9, thickness=3),
+                                ft.Text(f"{res.screen_width} - {res.screen_height}", size=14 * TEXT_SIZE, weight=ft.FontWeight.W_600, overflow=ft.TextOverflow.FADE),
+
+                            ],
+                            alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+                            expand=1
+                        )
+                    ]
+                ),
+                expand=True
+            ),
             ft.Row(
                 controls=[
                     secondary_preview,
                     third_preview,
-                    ft.Column(
-                        controls=[
-                            ft.Text(str(res.gaze_score[4]) + " gazes failed", size=14 * TEXT_SIZE, weight=ft.FontWeight.W_600,
-                                    overflow=ft.TextOverflow.FADE),
-                            ft.Divider(height=9, thickness=3),
-                            ft.Text(f"{round(res.total_time, 2)} seconds to choose", size=14 * TEXT_SIZE, weight=ft.FontWeight.W_600,
-                                    overflow=ft.TextOverflow.FADE),
-                        ],
-                        expand=True,
-                        alignment=ft.MainAxisAlignment.SPACE_EVENLY,
-                    )
-
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
                 expand=1
