@@ -18,7 +18,7 @@ class GroupResults:
         if gaze_points is None:
             gaze_points = []
         self.index: int = index
-        self.words: WordGroup = words
+        self.word_group: WordGroup = words
         self.selected: int = selected
         self.total_time: float = total_time
         if gaze_score is not None:
@@ -32,10 +32,9 @@ class GroupResults:
 
     def get_selected_word(self):
         """Return directly the selected word, not just his index in the group."""
-        return self.words.words[self.selected]
+        return self.word_group.words[self.selected]
 
     def __str__(self):
-        # return str(self.index) + " : " + str(self.words.words) + " | " + self.get_selected_word() + " | " + str(self.gaze_score) + "\n" + str(self.gaze_points)
         result = "["
         for pt in self.gaze_points:
             result = result + str(pt)

@@ -116,4 +116,4 @@ async def saveResultsToCSV(state: AppState):
                 points += str(pt) + ";"
             points = points.removesuffix(";")
 
-            writer.writerow([res.index] + res.words.words + [res.words.correct, res.words.sound, res.selected, res.total_time] + res.gaze_score + [points] + [res.screen_width, res.screen_height])
+            writer.writerow([res.index] + res.word_group.words + [res.word_group.correct, res.word_group.sound, res.selected, res.total_time] + res.gaze_score + [points] + [res.screen_width, res.screen_height])

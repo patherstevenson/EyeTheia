@@ -66,7 +66,7 @@ class HeatMapView(ft.View):
             cv.Text(
                 x=half_width / 2,
                 y=half_height / 2,
-                value=state.results[self.index].words.words[0],
+                value=state.results[self.index].word_group.words[0],
             )
 
         for pt in state.results[self.index].gaze_points:

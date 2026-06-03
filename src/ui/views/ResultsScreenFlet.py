@@ -8,33 +8,15 @@ from utils.config import SCREEN_HEIGHT, SCREEN_WIDTH, TEXT_SIZE
 
 @ft.control
 class ExperiencePreview(ft.Container):
-    def __init__(self, res: GroupResults, **kwargs):
+    def __init__(self, init_preview, **kwargs):
         super().__init__(**kwargs)
 
-        self.word_preview = WordPreview(words=res.words.words, size=24, font=ft.FontWeight.W_600, spacing=16)
-        self.trajectories_preview = TrajectoriesPreview(res)
-        self.heatmap = HeatMap(res)
-
-        self.content = self.word_preview
-
-        self.state = 0
+        self.content = init_preview
 
         self.border = ft.Border.all(6, ft.Colors.BLUE)
         self.expand = 1
         self.aspect_ratio = 1
-        self.on_click = self.handle_click
-
-    def handle_click(self, e):
-        self.state += 1
-        self.state = self.state % 3
-        if self.state == 0:
-            self.content = self.word_preview
-        elif self.state == 1:
-            self.content = self.trajectories_preview
-        elif self.state == 2:
-            self.content = self.heatmap
-
-        self.update()
+        self.ink = True
 
 
 @ft.control
@@ -145,18 +127,22 @@ def words_in_canva(res, canva_width, canva_height):
 
     text_style = ft.TextStyle(size=50 * TEXT_SIZE)
 
-    shapes.append(cv.Text(value=res.words.words[0], x=quarter_width, y=quarter_height, alignment=ft.Alignment.CENTER, style=text_style))
-    shapes.append(cv.Text(value=res.words.words[1], x=quarter_width * 3, y=quarter_height, alignment=ft.Alignment.CENTER, style=text_style))
-    shapes.append(cv.Text(value=res.words.words[2], x=quarter_width, y=quarter_height * 3, alignment=ft.Alignment.CENTER, style=text_style))
-    shapes.append(cv.Text(value=res.words.words[3], x=quarter_width * 3, y=quarter_height * 3, alignment=ft.Alignment.CENTER, style=text_style))
+    shapes.append(cv.Text(value=res.word_group.words[0], x=quarter_width, y=quarter_height, alignment=ft.Alignment.CENTER, style=text_style))
+    shapes.append(cv.Text(value=res.word_group.words[1], x=quarter_width * 3, y=quarter_height, alignment=ft.Alignment.CENTER, style=text_style))
+    shapes.append(cv.Text(value=res.word_group.words[2], x=quarter_width, y=quarter_height * 3, alignment=ft.Alignment.CENTER, style=text_style))
+    shapes.append(cv.Text(value=res.word_group.words[3], x=quarter_width * 3, y=quarter_height * 3, alignment=ft.Alignment.CENTER, style=text_style))
 
     return shapes
 
 
 @ft.control
 class WordPreview(ft.Column):
-    def __init__(self, words, size, font: ft.FontWeight, spacing, **kwargs):
+    """Preview of words with scores (numerals and circles)"""
+
+    def __init__(self, res: GroupResults, size, font: ft.FontWeight, spacing, **kwargs):
         super().__init__(**kwargs)
+
+        words = res.word_group.words
 
         self.controls = [
             ft.Row(
@@ -184,37 +170,42 @@ class WordPreview(ft.Column):
 
 
 @ft.control
+class PlaySoundWidget(ft.Container):
+    def __init__(self, res, page, **kwargs):
+        super().__init__(**kwargs)
+
+        self.content = ft.Row(
+            controls=[
+                ft.Text(res.word_group.sound, size=20 * TEXT_SIZE, weight=ft.FontWeight.W_600),
+                ft.IconButton(
+                    icon=ft.Icons.PLAY_ARROW,
+                    icon_color=ft.Colors.BLUE,
+                    icon_size=40,
+                    on_click=lambda _: page.run_task(playSound, res.word_group.sound)
+                )
+            ],
+            alignment=ft.MainAxisAlignment.CENTER,
+            expand=True
+        )
+        self.border = ft.Border.all(4, ft.Colors.BLUE_ACCENT)
+        self.expand = 1
+
+
+@ft.control
 class DataWidget(ft.Column):
     """Right half of a word_group widget, with the sound, the gaze points and time took to click"""
 
-    def __init__(self, res, page: ft.Page, **kwargs):
+    def __init__(self, res, page: ft.Page, init_previews, **kwargs):
         super().__init__(**kwargs)
 
+        (secondary_preview, third_preview) = init_previews
+
         self.controls = [
-            ft.Container(
-                content=ft.Row(
-                    controls=[
-                        ft.Text(res.words.sound, size=20 * TEXT_SIZE, weight=ft.FontWeight.W_600),
-                        ft.IconButton(
-                            icon=ft.Icons.PLAY_ARROW,
-                            icon_color=ft.Colors.BLUE,
-                            icon_size=40,
-                            on_click=lambda _: page.run_task(playSound, res.words.sound)
-                        )
-                    ],
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    expand=True
-                ),
-                border=ft.Border.all(4, ft.Colors.BLUE_ACCENT),
-                expand=1
-            )
-            ,
+            PlaySoundWidget(res, page),
             ft.Row(
                 controls=[
-                    ft.Container(
-                        content=WordPreview(res.gaze_score, 18, ft.FontWeight.W_600, 8),
-                        border=ft.Border.all(4, ft.Colors.BLUE)
-                    ),
+                    secondary_preview,
+                    third_preview,
                     ft.Column(
                         controls=[
                             ft.Text(str(res.gaze_score[4]) + " gazes failed", size=14 * TEXT_SIZE, weight=ft.FontWeight.W_600,
@@ -237,27 +228,29 @@ class DataWidget(ft.Column):
 
 
 @ft.control
-class ResWidget(ft.Container):
+class WordGroupResWidget(ft.Container):
     """Widget used to show results of a single word_group"""
 
     def __init__(self, page: ft.Page, res: GroupResults, **kwargs):
         super().__init__(**kwargs)
 
-        # word_tab_widget = WordsWidget_old(res.words.words, 24, ft.FontWeight.W_600, 16, 6, ft.Colors.BLUE)
-        word_tab_widget = ExperiencePreview(res)
+        self.word_preview = WordPreview(res=res, size=24, font=ft.FontWeight.W_600, spacing=16)
+        self.trajectories_preview = TrajectoriesPreview(res)
+        self.heatmap = HeatMap(res)
 
-        word_tab_widget.aspect_ratio = 1
-        word_tab_widget.ink = True
+        self.main_preview = ExperiencePreview(on_click=self.handle_click, init_preview=self.word_preview)
+        self.second_preview = ExperiencePreview(on_click=self.handle_click, init_preview=self.trajectories_preview)
+        self.third_preview = ExperiencePreview(on_click=self.handle_click, init_preview=self.heatmap)
 
-        # word_tab_widget.on_click = lambda _: switch_infos(word_tab_widget, res, page)
+        self.state = 0
 
-        res_data_widget = DataWidget(res, page)
+        res_data_widget = DataWidget(res, page, init_previews=(self.second_preview, self.third_preview))
 
         self.content = ft.Row(
             controls=[
                 # TabWidget : Words
-                word_tab_widget,
-                ft.VerticalDivider(width=9, thickness=3),
+                self.main_preview,
+                ft.VerticalDivider(),
                 res_data_widget
             ],
             alignment=ft.MainAxisAlignment.CENTER,
@@ -267,6 +260,27 @@ class ResWidget(ft.Container):
         self.border = ft.Border.all(10, ft.Colors.BLUE_ACCENT)
         self.expand = 1
         self.margin = ft.Margin.symmetric(horizontal=20)
+
+    def handle_click(self, e):
+        self.state += 1
+        self.state = self.state % 3
+        if self.state == 0:
+            self.main_preview.content = self.word_preview
+            self.second_preview.content = self.trajectories_preview
+            self.third_preview.content = self.heatmap
+        elif self.state == 1:
+            self.main_preview.content = self.trajectories_preview
+            self.second_preview.content = self.heatmap
+            self.third_preview.content = self.word_preview
+        elif self.state == 2:
+            self.main_preview.content = self.heatmap
+            self.second_preview.content = self.word_preview
+            self.third_preview.content = self.trajectories_preview
+
+        self.update()
+        self.main_preview.update()
+        self.second_preview.update()
+        self.third_preview.update()
 
 
 def handle_size_change(e):
@@ -281,7 +295,7 @@ class ResultScreenView(ft.View):
     def __init__(self, page: ft.Page, state: AppState, **kwargs):
         super().__init__(**kwargs)
         widget_list = [
-            ResWidget(page, res)
+            WordGroupResWidget(page, res)
             for res in state.results
         ]
 
