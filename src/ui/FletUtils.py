@@ -66,6 +66,8 @@ async def load_this_csv(page: ft.Page, file_path: str):
                     total_time = float(row[8])
                     gaze_score = [int(row[9]), int(row[10]), int(row[11]), int(row[12]), int(row[13])]
                     gaze_points_str = row[14].split(";")
+                    window_width = row[15]
+                    window_height = row[16]
 
                     gaze_points = []
 
@@ -76,10 +78,10 @@ async def load_this_csv(page: ft.Page, file_path: str):
                         y = str_pt.split(":")[1].strip(")")
                         gaze_points.append(GazePoint(cpt_gaze, int(x), int(y)))
 
-                    page.data.results.append(GroupResults(index, word_group, selected, total_time, gaze_score, gaze_points))
+                    page.data.results.append(GroupResults(index, word_group, selected, total_time, gaze_score, gaze_points, window_width, window_height))
 
             if file_type == "results":
-                page.push_route("/")
+                await page.push_route("WordExperiment")
 
 
 async def saveExperimentToCSV(state: AppState):
@@ -105,7 +107,7 @@ async def saveResultsToCSV(state: AppState):
         writer = csv.writer(csvfile, delimiter=',')
 
         writer.writerow(["result_index", "word_top_left", "word_top_right", "word_down_left", "word_down_right", "correct_word", "sound", "selected", "total_time", "gaze_score_top_left", "gaze_score_top_right", "gaze_score_down_left",
-                         "gaze_score_down_right", "gaze_where_not_detected", "points", ])
+                         "gaze_score_down_right", "gaze_where_not_detected", "points", "window_width", "window_height"])
 
         for res in state.results:
             points = ""
@@ -114,4 +116,4 @@ async def saveResultsToCSV(state: AppState):
                 points += str(pt) + ";"
             points = points.removesuffix(";")
 
-            writer.writerow([res.index] + res.words.words + [res.words.correct, res.words.sound, res.selected, res.total_time] + res.gaze_score + [points])
+            writer.writerow([res.index] + res.words.words + [res.words.correct, res.words.sound, res.selected, res.total_time] + res.gaze_score + [points] + [res.screen_width, res.screen_height])

@@ -2,8 +2,8 @@ import asyncio
 import threading
 import time
 
-from GazeManager import GazeManager
 import mediapipe as mp
+from GazeManager import GazeManager
 from experiments.wordExperiment.GazePoint import GazePoint
 from experiments.wordExperiment.GroupResults import GroupResults
 from ui.AppState import AppState
@@ -11,7 +11,7 @@ from utils.config import SCREEN_WIDTH, SCREEN_HEIGHT
 
 
 class WordExperiment:
-    def __init__(self, state: AppState):
+    def __init__(self, state: AppState, get_window_res):
         self.word_groups = state.word_groups
 
         self.actual_index = 0
@@ -22,6 +22,7 @@ class WordExperiment:
         self.listeners = {}
         self.state: AppState = state
         self.last_group_date = time.time()
+        self.get_window_res = get_window_res
 
     async def start(self):
         if self.running:
@@ -67,7 +68,7 @@ class WordExperiment:
                     await self.next_words()
 
     def get_button_index(self):
-        """Return button index based on where the patient is looking
+        """Return button index based on where the user is looking
         :return : The index of the looked button. 4 if no face is detected"""
         (cx, cy) = self.last_coords
         if cx == -1 & cy == -1:
@@ -116,7 +117,11 @@ class WordExperiment:
             await asyncio.sleep(self.state.settings.time_to_wait_between)
 
             new_word_group = self.word_groups[new_index]
-            self.state.results.append(GroupResults(new_index, new_word_group, chosen, total_time))
+
+            (window_width, window_height) = self.get_window_res()
+
+            # Save result
+            self.state.results.append(GroupResults(new_index, new_word_group, chosen, total_time=total_time, window_width=window_width, window_height=window_height))
 
             await self.listeners["show_word_group"]()
             self.last_group_date = time.time()

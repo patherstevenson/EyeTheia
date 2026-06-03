@@ -1,5 +1,6 @@
 from experiments.wordExperiment.GazePoint import GazePoint
 from experiments.wordExperiment.WordGroup import WordGroup
+from utils.config import SCREEN_WIDTH, SCREEN_HEIGHT
 
 
 class GroupResults:
@@ -7,7 +8,7 @@ class GroupResults:
     Represent the result of a Group of Words
     """
 
-    def __init__(self, index: int, words: WordGroup, selected: int = - 1, total_time: float = 0, gaze_score: list[int] = None, gaze_points=None):
+    def __init__(self, index: int, words: WordGroup, selected: int = - 1, total_time: float = 0, gaze_score: list[int] = None, gaze_points=None, window_width=SCREEN_WIDTH, window_height=SCREEN_HEIGHT):
         """
         Init a GroupResult
         :param index: the index of the group in the whole dataset
@@ -25,6 +26,9 @@ class GroupResults:
         else:
             self.gaze_score = [0, 0, 0, 0, 0]
         self.gaze_points: list[GazePoint] = gaze_points
+
+        self.screen_width = window_width
+        self.screen_height = window_height
 
     def get_selected_word(self):
         """Return directly the selected word, not just his index in the group."""
