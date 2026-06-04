@@ -159,7 +159,9 @@ class WordPreview(cv.Canvas):
 
     def draw_canva(self):
         self.shapes = []
-        # self.shapes.extend(words_in_canva(res=self.res, canva_width=self.canva_width, canva_height=self.canva_height))
+
+        self.shapes.append(cv.Text(alignment=ft.Alignment.BOTTOM_RIGHT, x=self.canva_width - 5, y=self.canva_height, value="Underlined = Correct Word", style=ft.TextStyle(decoration=ft.TextDecoration.UNDERLINE)))
+        self.shapes.append(cv.Text(alignment=ft.Alignment.BOTTOM_RIGHT, x=self.canva_width - 5, y=self.canva_height - 20, value="Coloured = Selected Word"))
 
         quarter_width = round(self.canva_width / 4)
         quarter_height = round(self.canva_height / 4)
@@ -194,7 +196,7 @@ class WordPreview(cv.Canvas):
                 else:
                     text_style.color = ft.Colors.RED
             self.shapes.append(cv.Text(x=x, y=y, value=self.res.word_group.words[index], alignment=ft.Alignment.CENTER, style=text_style))
-            self.shapes.append(cv.Text(x=x, y=y - self.canva_height / 20, value=str(self.res.gaze_score[0]), alignment=ft.Alignment.CENTER))
+            self.shapes.append(cv.Text(x=x, y=y - self.canva_height / 20, value=str(self.res.gaze_score[index]), alignment=ft.Alignment.CENTER))
 
             if total_score > 0:
                 self.shapes.append(cv.Circle(x=x, y=y, radius=max_radius * (self.res.gaze_score[index] / total_score), paint=ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE, color=ft.Colors.BLACK)))
