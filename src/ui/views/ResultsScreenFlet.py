@@ -1,7 +1,6 @@
 import flet as ft
 import flet.canvas as cv
 from experiments.wordExperiment.GroupResults import GroupResults
-from setuptools.config import expand
 from ui.AppState import AppState
 from ui.FletUtils import saveResultsToCSV, loadCSV, playSound
 from utils.config import SCREEN_HEIGHT, SCREEN_WIDTH, TEXT_SIZE
@@ -137,37 +136,52 @@ def words_in_canva(res, canva_width, canva_height):
 
 
 @ft.control
-class WordPreview(ft.Column):
+class WordPreview(cv.Canvas):
     """Preview of words with scores (numerals and circles)"""
 
-    def __init__(self, res: GroupResults, size, font: ft.FontWeight, spacing, **kwargs):
+    def __init__(self, res: GroupResults, **kwargs):
         super().__init__(**kwargs)
 
-        words = res.word_group.words
+        self.res = res
 
-        self.controls = [
-            ft.Row(
-                controls=[
-                    ft.Text(words[0], size=size * TEXT_SIZE, weight=font),
-                    ft.Text(words[1], size=size * TEXT_SIZE, weight=font)
-                ],
-                alignment=ft.MainAxisAlignment.SPACE_AROUND,
-                expand=1
-            ),
-            ft.Row(
-                controls=[
-                    ft.Text(words[2], size=size * TEXT_SIZE, weight=font),
-                    ft.Text(words[3], size=size * TEXT_SIZE, weight=font)
-                ],
-                alignment=ft.MainAxisAlignment.SPACE_AROUND,
-                expand=1
-            )
-        ]
-        self.alignment = ft.MainAxisAlignment.CENTER
-        self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-        # self.spacing = spacing
-        self.expand = 1
-        self.aspect_ratio = 1
+        self.shapes = []
+
+        self.canva_width = SCREEN_WIDTH
+        self.canva_height = SCREEN_HEIGHT
+
+        self.on_resize = self.handle_resize
+
+    def handle_resize(self, e):
+        """Handle when the window resize to update all widgets"""
+        self.canva_width: float = e.width
+        self.canva_height: float = e.height
+        self.draw_canva()
+
+    def draw_canva(self):
+        self.shapes = []
+        self.shapes.extend(words_in_canva(res=self.res, canva_width=self.canva_width, canva_height=self.canva_height))
+
+        quarter_width = round(self.canva_width / 4)
+        quarter_height = round(self.canva_height / 4)
+
+        total_score = 0
+        for score in self.res.gaze_score:
+            total_score += score
+
+        if total_score > 0:
+            stroke_paint = ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE, color=ft.Colors.BLACK)
+
+            max_radius = min(quarter_width, quarter_height)
+            self.shapes.append(cv.Circle(x=quarter_width, y=quarter_height, radius=max_radius * (self.res.gaze_score[0] / total_score), paint=stroke_paint))
+            self.shapes.append(cv.Circle(x=quarter_width * 3, y=quarter_height, radius=max_radius * (self.res.gaze_score[1] / total_score), paint=stroke_paint))
+            self.shapes.append(cv.Circle(x=quarter_width, y=(quarter_height * 3), radius=max_radius * (self.res.gaze_score[2] / total_score), paint=stroke_paint))
+            self.shapes.append(cv.Circle(x=quarter_width * 3, y=(quarter_height * 3), radius=max_radius * (self.res.gaze_score[3] / total_score), paint=stroke_paint))
+
+        distance_above_text = self.canva_height / 20
+        self.shapes.append(cv.Text(alignment=ft.Alignment.CENTER, x=quarter_width, y=quarter_height - distance_above_text, value=str(self.res.gaze_score[0])))
+        self.shapes.append(cv.Text(alignment=ft.Alignment.CENTER, x=quarter_width * 3, y=quarter_height - distance_above_text, value=str(self.res.gaze_score[1])))
+        self.shapes.append(cv.Text(alignment=ft.Alignment.CENTER, x=quarter_width, y=(quarter_height * 3) - distance_above_text, value=str(self.res.gaze_score[2])))
+        self.shapes.append(cv.Text(alignment=ft.Alignment.CENTER, x=quarter_width * 3, y=(quarter_height * 3) - distance_above_text, value=str(self.res.gaze_score[3])))
 
 
 @ft.control
@@ -216,12 +230,6 @@ class DataWidget(ft.Column):
                                 ft.TextField(label="Time to Choose", value=f"{round(res.total_time, 2)} seconds", text_style=style, read_only=True, width=150),
                                 ft.VerticalDivider(width=9, thickness=3),
                                 ft.TextField(label="Window Resolution", value=f"{res.screen_width} - {res.screen_height}", text_style=style, read_only=True, width=150),
-
-
-
-
-
-
                             ],
                             alignment=ft.MainAxisAlignment.SPACE_EVENLY,
                             expand=1
@@ -250,7 +258,7 @@ class WordGroupResWidget(ft.Container):
     def __init__(self, page: ft.Page, res: GroupResults, **kwargs):
         super().__init__(**kwargs)
 
-        self.word_preview = WordPreview(res=res, size=24, font=ft.FontWeight.W_600, spacing=16)
+        self.word_preview = WordPreview(res=res)
         self.trajectories_preview = TrajectoriesPreview(res)
         self.heatmap = HeatMap(res)
 
