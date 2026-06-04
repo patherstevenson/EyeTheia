@@ -245,11 +245,11 @@ class DataWidget(ft.Column):
                         PlaySoundWidget(res, page),
                         ft.Row(
                             controls=[
-                                ft.TextField(label="Gaze failed", value=str(res.gaze_score[4]), text_style=style, read_only=True, width=150),
+                                ft.TextField(label="Gaze failed", label_style=ft.TextStyle(size=16 * TEXT_SIZE), value=str(res.gaze_score[4]), text_style=style, read_only=True, width=150),
                                 ft.VerticalDivider(width=9, thickness=3),
-                                ft.TextField(label="Time to Choose", value=f"{round(res.total_time, 2)} seconds", text_style=style, read_only=True, width=150),
+                                ft.TextField(label="Time to Choose", label_style=ft.TextStyle(size=16 * TEXT_SIZE), value=f"{round(res.total_time, 2)} seconds", text_style=style, read_only=True, width=150),
                                 ft.VerticalDivider(width=9, thickness=3),
-                                ft.TextField(label="Window Resolution", value=f"{res.screen_width} - {res.screen_height}", text_style=style, read_only=True, width=150),
+                                ft.TextField(label="Window Resolution", label_style=ft.TextStyle(size=16 * TEXT_SIZE), value=f"{res.screen_width} - {res.screen_height}", text_style=style, read_only=True, width=150),
                             ],
                             alignment=ft.MainAxisAlignment.SPACE_EVENLY,
                             expand=1

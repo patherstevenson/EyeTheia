@@ -95,10 +95,9 @@ class PersonalizeView(ft.View):
                             self.button_preview,
                             ft.Row(
                                 controls=[
-                                    ft.Button(content="Load CSV", on_click=lambda _: page.run_task(loadCSV, page)),
-                                    ft.Button(content="Save To CSV", on_click=lambda _: page.run_task(self.save_experience, state)),
-                                    ft.Button(content="Go Back", on_click=lambda _: page.run_task(self.go_back),
-                                              ),
+                                    ft.Button(content="Load CSV", on_click=lambda _: page.run_task(loadCSV, page), scale = TEXT_SIZE),
+                                    ft.Button(content="Save To CSV", on_click=lambda _: page.run_task(self.save_experience, state), scale = TEXT_SIZE),
+                                    ft.Button(content="Go Back", on_click=lambda _: page.run_task(self.go_back), scale = TEXT_SIZE),
                                 ],
                                 alignment=ft.MainAxisAlignment.SPACE_EVENLY
                             )
@@ -215,6 +214,8 @@ class CorrectAnswerDropdown(ft.Dropdown):
 
         self.on_select = self.handle_select
 
+        self.text_size = 24 * TEXT_SIZE
+
     def handle_select(self, e):
         self.word_group.correct = self.word_group.words[int(e.control.value)]
         self.index = int(e.control.value)
@@ -236,7 +237,7 @@ class SoundPicker(ft.Container):
 
         self.word_group = word_group
 
-        self.choose_sound_button = ft.Button(content=word_group.sound)
+        self.choose_sound_button = ft.Button(content=word_group.sound, scale = TEXT_SIZE)
         self.play_sound_button = ft.IconButton(
             icon=ft.Icons.PLAY_ARROW,
             icon_color=ft.Colors.BLUE,
@@ -300,7 +301,7 @@ class GroupCustomization(ft.Container):
                         self.sound_picker,
                         ft.Row(
                             controls=[
-                                ft.Text("Correct Answer : "),
+                                ft.Text("Correct Answer : ", size = 24 * TEXT_SIZE),
                                 self.correct_answer_dropdown,
 
                             ]
@@ -409,6 +410,7 @@ class DragTile(ft.DragTarget):
                 on_change=lambda e, tile_index=index: on_change(tile_index, e.control.value),
                 expand=True,
                 border=ft.InputBorder.NONE,
+                text_style = ft.TextStyle(size=24 * TEXT_SIZE)
             ),
             padding=ft.Padding().all(5),
             border=ft.Border.all(1, ft.Colors.BLACK),
@@ -480,7 +482,7 @@ class AppSettingsWidget(ft.Container):
             controls=[
                 ft.Icon(ft.Icons.SETTINGS, color=ft.Colors.BLUE, expand=1),
                 self.value_picker,
-                ft.Text(value=self.description, weight=ft.FontWeight.W_600, expand=8),
+                ft.Text(value=self.description, weight=ft.FontWeight.W_600,size = 16 * TEXT_SIZE , expand=8),
             ],
             tight=True
         )
@@ -588,12 +590,12 @@ class ButtonSizePreview(ft.Container):
 
     def __init__(self, size: float = 0.5, **kwargs):
         super().__init__(**kwargs)
-        self.size = size
+        self.size = size* TEXT_SIZE
 
         self.aspect_ratio = 16 / 9
         self.buttons = [
             ft.Container(
-                content=ft.Button(content=ft.Text(content, size=76 * self.size)),
+                content=ft.Button(content=ft.Text(content, size=76 * self.size )),
                 expand=1,
                 alignment=ft.Alignment.CENTER,
             )
@@ -628,7 +630,7 @@ class ButtonSizePreview(ft.Container):
         self.resize_buttons()
 
     def resize_buttons(self):
-        self.size = self.page.data.settings.buttons_size
+        self.size = self.page.data.settings.buttons_size * TEXT_SIZE
 
         for button in self.buttons:
             button.content.width = max((self.width or 1920) / 2, 200) * self.size * 0.95
