@@ -159,7 +159,7 @@ class WordPreview(cv.Canvas):
 
     def draw_canva(self):
         self.shapes = []
-        self.shapes.extend(words_in_canva(res=self.res, canva_width=self.canva_width, canva_height=self.canva_height))
+        # self.shapes.extend(words_in_canva(res=self.res, canva_width=self.canva_width, canva_height=self.canva_height))
 
         quarter_width = round(self.canva_width / 4)
         quarter_height = round(self.canva_height / 4)
@@ -168,20 +168,38 @@ class WordPreview(cv.Canvas):
         for score in self.res.gaze_score:
             total_score += score
 
-        if total_score > 0:
-            stroke_paint = ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE, color=ft.Colors.BLACK)
+        max_radius = min(quarter_width, quarter_height)
 
-            max_radius = min(quarter_width, quarter_height)
-            self.shapes.append(cv.Circle(x=quarter_width, y=quarter_height, radius=max_radius * (self.res.gaze_score[0] / total_score), paint=stroke_paint))
-            self.shapes.append(cv.Circle(x=quarter_width * 3, y=quarter_height, radius=max_radius * (self.res.gaze_score[1] / total_score), paint=stroke_paint))
-            self.shapes.append(cv.Circle(x=quarter_width, y=(quarter_height * 3), radius=max_radius * (self.res.gaze_score[2] / total_score), paint=stroke_paint))
-            self.shapes.append(cv.Circle(x=quarter_width * 3, y=(quarter_height * 3), radius=max_radius * (self.res.gaze_score[3] / total_score), paint=stroke_paint))
+        for index, word in enumerate(self.res.word_group.words):
+            text_style = ft.TextStyle(size=50 * TEXT_SIZE, color=ft.Colors.BLACK)
 
-        distance_above_text = self.canva_height / 20
-        self.shapes.append(cv.Text(alignment=ft.Alignment.CENTER, x=quarter_width, y=quarter_height - distance_above_text, value=str(self.res.gaze_score[0])))
-        self.shapes.append(cv.Text(alignment=ft.Alignment.CENTER, x=quarter_width * 3, y=quarter_height - distance_above_text, value=str(self.res.gaze_score[1])))
-        self.shapes.append(cv.Text(alignment=ft.Alignment.CENTER, x=quarter_width, y=(quarter_height * 3) - distance_above_text, value=str(self.res.gaze_score[2])))
-        self.shapes.append(cv.Text(alignment=ft.Alignment.CENTER, x=quarter_width * 3, y=(quarter_height * 3) - distance_above_text, value=str(self.res.gaze_score[3])))
+            x = quarter_width
+            y = quarter_height
+
+            if index % 2 == 1:
+                x = x * 3
+            if index > 1:
+                y = y * 3
+
+            correct = False
+
+            ## If it's the correct word
+            if self.res.word_group.correct == word:
+                correct = True
+                text_style.decoration = ft.TextDecoration.UNDERLINE
+
+            if self.res.selected == index:
+                if correct:
+                    text_style.color = ft.Colors.BLUE
+                else:
+                    text_style.color = ft.Colors.RED
+            self.shapes.append(cv.Text(x=x, y=y, value=self.res.word_group.words[index], alignment=ft.Alignment.CENTER, style=text_style))
+            self.shapes.append(cv.Text(x=x, y=y - self.canva_height / 20, value=str(self.res.gaze_score[0]), alignment=ft.Alignment.CENTER))
+
+            if total_score > 0:
+                self.shapes.append(cv.Circle(x=x, y=y, radius=max_radius * (self.res.gaze_score[index] / total_score), paint=ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE, color=ft.Colors.BLACK)))
+
+        # Scores
 
 
 @ft.control
