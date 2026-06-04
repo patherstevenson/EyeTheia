@@ -195,11 +195,14 @@ class WordPreview(cv.Canvas):
                     text_style.color = ft.Colors.BLUE
                 else:
                     text_style.color = ft.Colors.RED
-            self.shapes.append(cv.Text(x=x, y=y, value=self.res.word_group.words[index], alignment=ft.Alignment.CENTER, style=text_style))
-            self.shapes.append(cv.Text(x=x, y=y - self.canva_height / 20, value=str(self.res.gaze_score[index]), alignment=ft.Alignment.CENTER))
-
+            score_style = ft.TextStyle(bgcolor=ft.Colors.WHITE)
             if total_score > 0:
-                self.shapes.append(cv.Circle(x=x, y=y, radius=max_radius * (self.res.gaze_score[index] / total_score), paint=ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE, color=ft.Colors.BLACK)))
+                self.shapes.append(cv.Circle(x=x, y=y, radius=max_radius * (self.res.gaze_score[index] / total_score), paint=ft.Paint(stroke_width=2, style=ft.PaintingStyle.STROKE, color=ft.Colors.GREY)))
+                self.shapes.append(cv.Text(x=x, y=y + self.canva_height / 20, value=str(round((self.res.gaze_score[index] / total_score) * 100)) + "%", alignment=ft.Alignment.CENTER, style=score_style))
+
+            self.shapes.append(cv.Text(x=x, y=y, value=self.res.word_group.words[index], alignment=ft.Alignment.CENTER, style=text_style))
+
+            self.shapes.append(cv.Text(x=x, y=y - self.canva_height / 20, value=str(self.res.gaze_score[index]), alignment=ft.Alignment.CENTER, style=score_style))
 
         # Scores
 
