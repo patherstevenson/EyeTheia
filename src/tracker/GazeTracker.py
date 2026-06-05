@@ -299,7 +299,7 @@ class GazeTracker:
 
             self.logger.log_data(gaze_x, gaze_y)
 
-            return gaze_x, gaze_y
+            return float(gaze_x), float(gaze_y)
 
 
     def _draw_loading_frame(self, angle_deg: float) -> np.ndarray:
