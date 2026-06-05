@@ -685,12 +685,17 @@ for details.
 If you use EyeTheia in your research, please cite:
 
 ```bibtex
-@inproceedings{pather2026eyetheia,
-  title     = {EyeTheia: A Lightweight and Accessible Eye-Tracking Toolbox},
-  author    = {Pather, Stevenson and Maia, Deise Santana},
-  booktitle = {International Conference on Pattern Recognition (ICPR)},
-  year      = {2026}
+@misc{pather2026eyetheia,
+  title         = {EyeTheia: A Lightweight and Accessible Eye-Tracking Toolbox},
+  author        = {Stevenson Pather and Niels Martignène and Arnaud Bugnet and Fouad Boutaleb and Fabien D'Hondt and Deise Santana Maia},
+  year          = {2026},
+  eprint        = {2601.06279},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CV},
+  url           = {https://arxiv.org/abs/2601.06279},
+  note          = {Accepted at the 27th International Conference on Pattern Recognition (ICPR 2026)}
 }
 ```
+The BibTeX entry will be updated once the final Springer Nature proceedings version becomes available.
 
 Please update this entry with the final proceedings information once available.
