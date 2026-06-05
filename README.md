@@ -1,272 +1,696 @@
 # EyeTheia
 
-## Project Overview
+## Overview
 
-**EyeTheia** is an open-source project dedicated to **2D gaze estimation**, predicting the user's **point of regard on the screen** in pixel coordinates.
-It leverages pre-trained deep learning models to infer the gaze position from facial images and landmarks extracted in real time.
+**EyeTheia** is an open-source, cross-platform toolbox for **webcam-based 2D gaze estimation**.
 
-A **personal calibration phase** is performed for each user to collect sample data across multiple screen points.
-These samples are then used to **fine-tune the model**, adapting it to the user's specific facial features and improving gaze prediction accuracy.
+The project predicts the user's **point of regard on the screen** using facial images, facial landmarks, and deep learning-based gaze estimation models derived from the iTracker architecture.
+
+EyeTheia combines:
+
+* Deep learning-based gaze estimation
+* Personalized calibration
+* User-specific model adaptation
+* Real-time gaze prediction
+* Browser-side deployment through ONNX Runtime Web
+* Python and client-server inference modes
+* Reproducible research workflows
+
+The toolbox was designed to provide an accessible alternative to dedicated eye-tracking hardware while remaining suitable for scientific research and experimental studies.
+
+EyeTheia can be used in:
+
+* Human-computer interaction research
+* Cognitive science experiments
+* Psychology studies
+* Behavioral analysis
+* Online experiments
+* Laboratory experiments
+
+Unlike dedicated eye trackers, EyeTheia only requires a standard webcam and commodity hardware.
 
 ---
 
-# Client-side ONNX Inference
+# Key Features
 
-EyeTheia now supports **client-side inference using ONNX** after the personal calibration and fine-tuning phase.
+## Personalized Calibration
 
-This allows the trained model to run **directly inside the browser** using **ONNX Runtime Web**, eliminating the need to send frames to the backend for gaze prediction once calibration is complete.
+EyeTheia includes a user-specific calibration procedure.
 
-The workflow is as follows:
+During calibration, participants fixate a set of predefined screen locations.
 
-1. The user performs the **personal calibration phase**.
-2. The FastAPI backend collects calibration samples.
-3. The model is **fine-tuned on the server** using these samples.
-4. The fine-tuned PyTorch model is **exported to ONNX**.
-5. The browser **downloads the ONNX model, metadata, and normalization statistics**.
-6. Gaze prediction is then performed **locally in the browser using WebWorkers and ONNX Runtime Web**.
+For each calibration point, the framework collects:
 
-This architecture provides several benefits:
+* Webcam images
+* Facial landmarks
+* Ground-truth screen coordinates
 
-* **Reduced latency** (no network round-trip per frame)
-* **Lower backend load**
-* **Better scalability for experiments with many participants**
-* **Offline inference capability after calibration**
+These samples are then used to adapt the gaze estimation model to the current participant.
 
-The frontend implementation relies on:
+This personalization step significantly improves prediction accuracy compared to a generic model.
 
-* **ONNX Runtime Web** for model execution
-* **WebWorkers** for asynchronous inference
-* **MediaPipe FaceMesh** for real-time facial landmark extraction
+---
 
-After the ONNX model is loaded, the system automatically switches to **frontend inference mode**.
+## Browser Deployment with ONNX
+
+A major feature of EyeTheia is its ability to deploy personalized gaze estimation models directly inside a web browser.
+
+After calibration and model adaptation, EyeTheia can export the trained model to ONNX and execute it locally using ONNX Runtime Web. The exported ONNX model corresponds to the personalized gaze model obtained after calibration and fine-tuning.
+
+This architecture provides:
+
+* Real-time gaze estimation
+* Reduced latency
+* Improved privacy
+* Lower server requirements
+* Large-scale online deployment
+
+The ONNX deployment remains fully compatible with the Python implementation and serves as an additional deployment option rather than a replacement.
+
+---
+
+## Deep Learning-Based Gaze Estimation
+
+EyeTheia is based on the iTracker architecture introduced in:
+
+> [Eye Tracking for Everyone, K. Krafka et al.](https://arxiv.org/abs/1606.05814)
+
+![](./images/model.png)
+
+The model combines:
+
+* Face image
+* Left eye image
+* Right eye image
+* Face grid
+
+to estimate the user's gaze position directly in screen coordinates.
+
+Predictions are returned as:
+
+```text
+(x, y) pixels
+```
+
+---
+
+# Architecture
+
+```text
+Webcam
+   │
+   ▼
+Face Detection / Landmark Extraction
+   │
+   ▼
+Feature Extraction
+   │
+   ▼
+EyeTheia Gaze Model
+   │
+   ├── PyTorch Inference
+   ├── Client-Server Inference
+   └── ONNX Browser Inference
+   │
+   ▼
+Screen Gaze Coordinates
+```
+
+The framework is designed to remain independent of the landmark extraction backend and can be integrated with different computer vision pipelines.
+
+---
+
+# Repository Structure
+
+```text
+EyeTheia/
+├── dataset/
+├── figures/
+├── images/
+├── logs/
+│   ├── assessments/
+│   └── beta_search/
+├── notebooks/
+├── sourcedoc/
+├── src/
+│   ├── models/
+│   ├── routes/
+│   ├── tracker/
+│   └── utils/
+├── tests/
+├── requirements.txt
+├── Makefile
+└── README.md
+```
+
+---
+
+# Platform Compatibility
+
+EyeTheia has been tested on:
+
+* Ubuntu Linux
+* Microsoft Windows
+
+The toolbox is designed to be platform-independent and relies primarily on Python and PyTorch.
 
 ---
 
 # Environment Setup
 
-We use **Conda** to manage the development environment.
-To create the environment, run:
+EyeTheia uses Python 3.10.
+
+Create and activate a Conda environment:
 
 ```bash
-$ conda create -n eyetheia python=3.10
-$ conda activate eyetheia
+conda create -n eyetheia python=3.10
+conda activate eyetheia
 ```
 
-To install all dependencies:
+Install dependencies:
 
 ```bash
-$ make lib
+make lib
 ```
+
+This command installs dependencies from `requirements.txt` and the PyTorch version used during development.
+
+---
+
+# Hardware Requirements
+
+## Minimum Requirements
+
+* Standard webcam
+* Python 3.10
+* 8 GB RAM
+* CPU inference support
+
+## Recommended Requirements
+
+* NVIDIA GPU with CUDA support
+* 16 GB RAM or more
+* Modern webcam
+
+A dedicated GPU is not required for inference and experimentation but can significantly accelerate training and fine-tuning.
 
 ---
 
 # Running EyeTheia
 
-You have two main ways to run **EyeTheia**, depending on your use case.
-
----
-
-## 1. Run the full demo (tracking + calibration)
-
-If you want to directly try the complete demo — including the calibration phase and real-time gaze tracking — simply run:
+Run the main application:
 
 ```bash
-$ make run
+make run
 ```
 
-This command launches the end-to-end application locally, handling camera input, calibration, and live gaze prediction.
-
----
-
-# Start a Tracker Server (API Mode)
-
-If you prefer to use EyeTheia as a backend service via its FastAPI interface, you can start a tracker server manually or through the Makefile.
-
-Supported models:
-
-* **baseline** — iTracker trained on the **GazeCapture** dataset
-* **mpiiface** — iTracker retrained on the **MPIIFaceGaze** dataset
-
-You can start them directly using the **Makefile** commands:
+Equivalent command:
 
 ```bash
-# Launch the baseline tracker (iTracker trained on GazeCapture)
-$ make baseline
+python3 src/main.py
 ```
+
+Run the MPIIFaceGaze backend server:
 
 ```bash
-# Launch the MPIIFaceGaze retrained tracker
-$ make mpii
+make mpii
 ```
 
-Or manually:
+Equivalent command:
 
 ```bash
-python src/run_server.py --model_path MODEL_PATH [--host HOST]
+python src/run_server.py --model_path itracker_mpiiface.tar
 ```
 
-Arguments:
+Run the baseline backend server:
 
-* `--model_path` **(required)**: path to the model weights.
-* `--host` **(optional)**: default `127.0.0.1`.
-
-The port is automatically assigned depending on the model:
-
-* **8001** → baseline
-* **8002** → mpiiface
-
-Each tracker runs its own **FastAPI server**, allowing **multiple models to run simultaneously on different ports**.
-
-This is particularly useful for experiments comparing different gaze estimation models.
-
----
-
-# ONNX Export API
-
-After calibration and fine-tuning, the backend automatically exports the trained model to ONNX.
-
-The following API endpoints are used by the frontend:
-
-| Endpoint                     | Description                         |
-| ---------------------------- | ----------------------------------- |
-| `/onnx/export/{client_id}`   | Export the fine-tuned model to ONNX |
-| `/onnx/status/{client_id}`   | Check export status                 |
-| `/onnx/metadata/{client_id}` | Retrieve model metadata             |
-| `/onnx/means/{client_id}`    | Retrieve normalization statistics   |
-| `/onnx/latest/{client_id}`   | Download the ONNX model             |
-
-Each model is stored using the pair:
-
-```
-(client_id, model_key)
+```bash
+make baseline
 ```
 
-Where:
+Equivalent command:
 
-* **client_id** identifies the experiment subject or session
-* **model_key** identifies the backbone used for fine-tuning (`baseline` or `mpiiface`)
-
-This allows multiple models for the same subject to coexist without conflicts.
-
-Example:
-
-```
-subject_001 + baseline
-subject_001 + mpiiface
+```bash
+python src/run_server.py --model_path itracker_baseline.tar
 ```
 
 ---
 
-# API Usage Example
+# Pretrained Models
 
-A **JavaScript frontend example** is provided which:
+Pretrained checkpoints are available in:
 
-* captures webcam frames
-* extracts facial landmarks with MediaPipe
-* performs calibration
-* downloads the ONNX model
-* runs gaze prediction in the browser
+```text
+src/models/
+```
 
-Example implementation: [pygaze.js – Calypso frontend example](https://git.interactions-team.fr/INTERACTIONS/calypso/src/branch/main/lib/web/survey/trackers/pygaze.js)
+Available models:
 
+| Model                 | Description                   |
+| --------------------- | ----------------------------- |
+| itracker_baseline.tar | Baseline iTracker model       |
+| itracker_mpiiface.tar | MPIIFaceGaze retrained model  |
 
-This implementation can serve as a reference for integrating **EyeTheia** into:
+---
 
-* behavioral experiments
-* psychology studies
-* human-computer interaction research
-* gaze-controlled interfaces
+# Calibration Workflow
+
+EyeTheia includes built-in calibration procedures and calibration layouts.
+
+Examples are available in:
+
+```text
+src/utils/calib_5/
+src/utils/calib_9/
+src/utils/calib_13/
+```
+
+The default workflow consists of:
+
+1. Displaying calibration targets.
+2. Capturing webcam images.
+3. Extracting facial landmarks.
+4. Associating visual features with known gaze coordinates.
+5. Fine-tuning the gaze estimation model.
+
+---
+
+## Custom Calibration Interfaces
+
+EyeTheia is not restricted to the built-in calibration layouts.
+
+External applications may implement their own calibration interfaces and submit calibration samples directly to the EyeTheia backend.
+
+This allows EyeTheia to be integrated into:
+
+* Web-based experimental platforms
+* Online behavioral studies
+* Custom research software
+* Third-party user interfaces
+
+A typical workflow is:
+
+```text
+Custom Calibration UI
+        │
+        ▼
+Calibration Samples
+        │
+        ▼
+EyeTheia Backend
+        │
+        ▼
+Model Fine-Tuning
+        │
+        ▼
+Personalized Gaze Model
+```
+
+The backend exposes routes for:
+
+* Screen configuration
+* Calibration sample submission
+* Model adaptation and fine-tuning
+* Gaze prediction
+* Personalized ONNX model export
+
+Researchers may therefore implement their own calibration layouts and experimental interfaces while still relying on EyeTheia for model adaptation, personalized calibration, and gaze estimation.
+
+This architecture allows researchers to design their own calibration procedures while still leveraging EyeTheia's adaptation and gaze estimation pipeline.
+
+---
+
+# Personalized Model Deployment
+
+After calibration and fine-tuning, EyeTheia produces a personalized gaze estimation model.
+
+Users may then choose between two deployment strategies:
+
+* WebSocket/API inference through the Python backend.
+* Browser-side deployment through ONNX Runtime Web.
+
+The same personalized model can therefore be used either server-side or directly inside a web browser.
+
+## WebSocket Prediction
+
+The personalized model can remain hosted inside the Python backend.
+
+In this configuration:
+
+1. The client captures webcam frames and landmarks.
+2. Features are sent to the EyeTheia backend.
+3. The personalized model performs inference.
+4. Predicted gaze coordinates are returned through the prediction API or WebSocket interface.
+
+This mode is particularly useful when GPU resources are available on the server.
+
+Relevant files:
+
+```text
+src/run_server.py
+src/routes/ws_calibration.py
+src/routes/ws_model.py
+src/utils/ws_codec.py
+```
+
+---
+
+## ONNX Browser Deployment
+
+The personalized model can also be exported to ONNX.
+
+The exported ONNX model corresponds to the personalized gaze model obtained after calibration and fine-tuning and can therefore be deployed independently of the Python backend.
+
+Once exported, the model can be executed directly in the browser using ONNX Runtime Web.
+
+This architecture provides:
+
+* Real-time gaze estimation
+* Reduced latency
+* Improved privacy
+* Reduced backend load
+* Offline inference after calibration
+
+Typical workflow:
+
+```text
+Calibration
+      │
+      ▼
+Fine-Tuning
+      │
+      ▼
+Personalized Model
+      │
+      ├──────────────┐
+      ▼              ▼
+WebSocket       ONNX Export
+Inference            │
+                     ▼
+           ONNX Runtime Web
+                     │
+                     ▼
+            Browser Prediction
+```
+
+Relevant file:
+
+```text
+src/routes/onnx.py
+```
+
+---
+
+# Datasets
+
+## GazeCapture
+
+Original iTracker dataset.
+
+Paper:
+
+https://arxiv.org/abs/1606.05814
+
+---
+
+## MPIIFaceGaze
+
+Desktop webcam gaze estimation dataset.
+
+Dataset:
+
+http://datasets.d2.mpi-inf.mpg.de/MPIIGaze/MPIIFaceGaze.zip
+
+Place the dataset in:
+
+```text
+dataset/
+```
+
+For inference using pretrained checkpoints, downloading the dataset is not required.
+
+For training or reproducing training experiments, the dataset must be downloaded and prepared.
+
+---
+
+# Experiments and Reproducibility
+
+This repository contains the code, pretrained models, notebooks, logs, and analysis scripts used to generate the results reported in:
+
+> [EyeTheia: A Lightweight and Accessible Eye-Tracking Toolbox](https://arxiv.org/abs/2601.06279)
+
+accepted at ICPR 2026.
+
+---
+
+## Training and Calibration Experiments
+
+### Training Pipeline
+
+The MPIIFaceGaze model used throughout the paper was trained using the EyeTheia training pipeline located in:
+
+```text
+src/main_train.py
+src/tracker/GazeTrain.py
+src/tracker/GazeModel.py
+src/utils/mpiifacegaze_dataset.py
+```
+
+The repository also includes the SLURM script used to execute the Huber loss hyperparameter search on a computing cluster:
+
+```text
+cluster_HuberLoss_beta_gridsearch.slurm
+```
+
+This script was used to perform the beta search reported in Section 5.1 and generate the training logs stored in:
+
+```text
+logs/beta_search/
+```
+
+The resulting model corresponds to the MPIIFaceGaze checkpoint distributed with the repository:
+
+```text
+src/models/itracker_mpiiface.tar
+```
+
+The complete training workflow is therefore:
+
+```text
+MPIIFaceGaze Dataset
+          │
+          ▼
+src/main_train.py
+          │
+          ▼
+cluster_HuberLoss_beta_gridsearch.slurm
+          │
+          ▼
+logs/beta_search/
+          │
+          ▼
+Training Figures (Section 5.1)
+          │
+          ▼
+itracker_mpiiface.tar
+```
+
+The training and calibration results reported in Section 5.1 are supported by:
+
+```text
+logs/beta_search/
+```
+
+This directory contains:
+
+```text
+best_val_loss.csv
+lr_comparison_beta_08.csv
+summary_val_loss.csv
+generate_plot.py
+```
+
+These files were used to generate the validation and training figures reported in the paper.
+
+To regenerate the plots:
+
+```bash
+cd logs/beta_search
+python generate_plot.py
+```
+
+Generated figures correspond to:
+
+```text
+figures/
+├── fig_all_val_curves.png
+├── fig_best_val_loss.png
+├── fig_lr_comparison_beta_08.png
+└── fig_val_curves_per_beta.png
+```
+
+Additional figures are available in:
+
+```text
+notebooks/figures/
+```
+
+The main training notebook example is:
+
+```text
+notebooks/iTracker_MPIIFace_Training.ipynb
+```
+
+---
+
+### Experimental Data
+
+The training figures reported in Section 5.1 were generated from the training logs stored in:
+
+```text
+logs/beta_search/
+```
+
+The comparison figures reported in Section 5.2 were generated from the experimental databases stored in:
+
+```text
+logs/assessments/db/
+```
+
+All scripts required to regenerate these figures are included in the repository.
+
+## EyeTheia vs SeeSo Comparison
+
+The comparison between EyeTheia and SeeSo reported in Section 5.2 is supported by:
+
+```text
+logs/assessments/
+```
+
+Contents:
+
+```text
+db/
+function.py
+interpret.ipynb
+```
+
+The `db/` directory contains the experimental recordings collected during the attentional bias dot-probe experiment using IAPS stimuli.
+
+The notebook:
+
+```text
+logs/assessments/interpret.ipynb
+```
+
+and helper script:
+
+```text
+logs/assessments/function.py
+```
+
+were used to process the experimental databases and generate the EyeTheia vs SeeSo comparison figures reported in the paper.
+
+To reproduce the analysis:
+
+```bash
+jupyter notebook logs/assessments/interpret.ipynb
+```
+
+Run all notebook cells to regenerate the reported figures.
+
+---
+
+# Experimental Platform
+
+EyeTheia can be integrated into external experimental platforms.
+
+The reference platform used in our studies is:
+
+[Calypso Experimental Platform: Medita](https://git.interactions-team.fr/INTERACTIONS/calypso/src/branch/main/src/medita)
+
+Calypso provides:
+
+* Experimental task management
+* Calibration interfaces
+* Data collection workflows
+* Online behavioral experiments
+
+Within this framework, EyeTheia serves as the gaze estimation component.
 
 ---
 
 # Documentation
 
-We use **Sphinx** to generate project documentation.
+The source documentation is located in:
 
-To build the documentation:
+```text
+sourcedoc/
+```
+
+Build the HTML documentation:
 
 ```bash
 make doc
 ```
 
-The generated HTML files will be available in:
+Generated documentation will be available in:
 
-```
-docs/_build/html/
-```
-
-The main entry point is:
-
-```
-docs/_build/html/index.html
+```text
+doc/
 ```
 
 ---
 
 # Testing
 
-To run unit tests:
+Unit tests are available in:
+
+```text
+tests/
+```
+
+Run all tests:
 
 ```bash
-$ make test
+make test
 ```
 
----
+The test suite covers:
 
-# Dataset
-
-The project supports two pre-trained model configurations:
-
-### itracker_baseline.tar
-
-Based on the original **iTracker** architecture from the paper:
-
-"Eye Tracking for Everyone"
-
-[https://arxiv.org/abs/1606.05814](https://arxiv.org/abs/1606.05814)
-
-Trained on the **GazeCapture dataset**.
-
----
-
-### itracker_mpiiface.tar
-
-Retrained using the **MPIIFaceGaze dataset**:
-
-[http://datasets.d2.mpi-inf.mpg.de/MPIIGaze/MPIIFaceGaze.zip](http://datasets.d2.mpi-inf.mpg.de/MPIIGaze/MPIIFaceGaze.zip)
-
-This dataset contains real-world face images with accurate gaze annotations.
-
-If you plan to train the model, download and extract the dataset into:
-
-```
-dataset/
-```
-
-For **inference only**, the dataset is **not required**.
-
----
-
-# VM User Webcam
-
-If you run EyeTheia inside a **virtual machine** (for example **WSL2**) and do not use the FastAPI webcam routes, please refer to the documentation section:
-
-```
-Running on a Virtual Machine (e.g., WSL2)
-```
-
-This section explains how to stream a webcam using **MJPEG Streamer** and configure the environment variable:
-
-```
-WEBCAM_URL
-```
+* Calibration
+* Gaze tracking
+* Model behavior
+* Data logging
+* Utility functions
 
 ---
 
 # License
 
-This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
+This project is licensed under the GNU General Public License v3.0 (GPL-3.0).
 
-You may redistribute and/or modify it under the terms of the GPL-3.0 as published by the Free Software Foundation.
+See:
 
-See the `LICENSE` file for full details.
+```text
+LICENSE
+```
+
+for details.
+
+---
+
+# Citation
+
+If you use EyeTheia in your research, please cite:
+
+```bibtex
+@inproceedings{pather2026eyetheia,
+  title     = {EyeTheia: A Lightweight and Accessible Eye-Tracking Toolbox},
+  author    = {Pather, Stevenson and Maia, Deise Santana},
+  booktitle = {International Conference on Pattern Recognition (ICPR)},
+  year      = {2026}
+}
+```
+
+Please update this entry with the final proceedings information once available.
