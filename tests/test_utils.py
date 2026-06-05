@@ -42,13 +42,13 @@ def test_generate_face_grid():
 
 # Test gaze_cm_to_pixels
 def test_gaze_cm_to_pixels():
-    x_pixel, y_pixel = gaze_cm_to_pixels(0, 0)
+    x_pixel, y_pixel = gaze_cm_to_pixels(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
     assert x_pixel == SCREEN_WIDTH // 2
     assert y_pixel == SCREEN_HEIGHT // 2
 
 # Test pixels_to_gaze_cm
 def test_pixels_to_gaze_cm():
-    x_cm, y_cm = pixels_to_gaze_cm(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+    x_cm, y_cm = pixels_to_gaze_cm(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, SCREEN_WIDTH, SCREEN_HEIGHT)
     assert abs(x_cm) < 1e-5
     assert abs(y_cm) < 1e-5
 

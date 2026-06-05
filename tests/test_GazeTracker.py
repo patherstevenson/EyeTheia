@@ -21,19 +21,6 @@ def test_gaze_tracker_init():
     assert isinstance(tracker.logger, GazeDataLogger)
     assert str(tracker.device) in ["cpu", "cuda"]
 
-# Test _determine_position and _determine_quadrant
-def test_gaze_tracker_determine_position():
-    tracker = GazeTracker(model_path="itracker_baseline.tar")
-    assert tracker._determine_position(100, 100) in ["Top Left", "Top Right", "Bottom Left", "Bottom Right", "Center"]
-
-def test_gaze_tracker_determine_quadrant():
-    tracker = GazeTracker(model_path="itracker_baseline.tar")
-    assert tracker._determine_quadrant(-0.5, 0.5) == "Top Left"
-    assert tracker._determine_quadrant(0.5, 0.5) == "Top Right"
-    assert tracker._determine_quadrant(-0.5, -0.5) == "Bottom Left"
-    assert tracker._determine_quadrant(0.5, -0.5) == "Bottom Right"
-    assert tracker._determine_quadrant(0.0, 0.0) == "Center"
-
 # Test gaze prediction
 def test_gaze_tracker_predict_gaze():
     tracker = GazeTracker(model_path="itracker_baseline.tar")
@@ -47,11 +34,10 @@ def test_gaze_tracker_predict_gaze():
     
     tracker.model.return_value = torch.tensor([[0.0, 0.0]])
     
-    pos_x, pos_y, position = tracker.predict_gaze(face_input, left_eye_input, right_eye_input, face_grid_input)
-    
-    assert isinstance(pos_x, int)
-    assert isinstance(pos_y, int)
-    assert isinstance(position, str)
+    pos_x, pos_y = tracker.predict_gaze(face_input, left_eye_input, right_eye_input, face_grid_input)
+
+    assert isinstance(pos_x, float)
+    assert isinstance(pos_y, float)
 
 # Test extract_features
 def test_gaze_tracker_extract_features():
