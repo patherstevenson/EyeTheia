@@ -198,7 +198,7 @@ A dedicated GPU is not required for inference and experimentation but can signif
 
 # Running EyeTheia
 
-Run the main application:
+## Demo
 
 ```bash
 make run
@@ -210,19 +210,7 @@ Equivalent command:
 python3 src/main.py
 ```
 
-Run the MPIIFaceGaze backend server:
-
-```bash
-make mpii
-```
-
-Equivalent command:
-
-```bash
-python src/run_server.py --model_path itracker_mpiiface.tar
-```
-
-Run the baseline backend server:
+## Baseline Model Server
 
 ```bash
 make baseline
@@ -232,6 +220,18 @@ Equivalent command:
 
 ```bash
 python src/run_server.py --model_path itracker_baseline.tar
+```
+
+## MPIIFaceGaze Model Server
+
+```bash
+make mpii
+```
+
+Equivalent command:
+
+```bash
+python src/run_server.py --model_path itracker_mpiiface.tar
 ```
 
 ---
