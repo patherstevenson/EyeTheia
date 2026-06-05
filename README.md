@@ -693,7 +693,7 @@ If you use EyeTheia in your research, please cite:
   archivePrefix = {arXiv},
   primaryClass  = {cs.CV},
   url           = {https://arxiv.org/abs/2601.06279},
-  note          = {Accepted at the 27th International Conference on Pattern Recognition (ICPR 2026)}
+  note          = {Accepted at the 28th International Conference on Pattern Recognition (ICPR 2026)}
 }
 ```
 The BibTeX entry will be updated once the final Springer Nature proceedings version becomes available.
