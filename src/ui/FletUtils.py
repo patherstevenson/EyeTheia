@@ -10,6 +10,7 @@ from ui.AppState import AppState
 
 async def playSound(path: str):
     """Play a sound. Take a full path, or just the file name (in that case, look at src/experiments/wordExperiment/res/sounds)"""
+    print("play " + path)
     if path.startswith("/"):
         playsound(path)
     else:

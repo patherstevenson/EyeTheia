@@ -1,9 +1,9 @@
 import asyncio
 
 import flet as ft
-from experiments.wordExperiment.WordExperiment import WordExperiment
+from experiments.wordExperiment.WordExperiment_new import WordExperiment
+from experiments.wordExperiment.WordGroup import WordGroup
 from ui.AppState import AppState
-from ui.FletUtils import playSound
 from utils.config import TEXT_SIZE
 
 
@@ -13,8 +13,10 @@ class WordExperimentView(ft.View):
         super().__init__(**kwargs)
 
         self.app_scale = 1.5 * TEXT_SIZE
+        self.ui_loop = asyncio.get_running_loop()
 
-        self.exp = WordExperiment(state, self.get_window_res)
+        # self.exp = WordExperiment(state, self.get_window_res)
+        self.exp = WordExperiment(state=state, show_plus=self.show_plus, show_words=self.show_word_group, finish=self.stop_experiment)
 
         self.quarter_width = max((page.window.width or 1920) / 2, 200) * state.settings.buttons_size
         self.quarter_height = max((page.window.height or 1080) / 2, 140) * state.settings.buttons_size
@@ -26,29 +28,29 @@ class WordExperimentView(ft.View):
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
         )
 
-        self.words = [
+        self.buttons = [
             ft.Container(
                 content=ft.Button(
                     content=ft.Text(word, size=76 * state.settings.buttons_size * TEXT_SIZE),
                     width=self.quarter_width,
                     height=self.quarter_height,
-                    on_click=lambda _, i=index: page.run_task(self.exp.next_words, i)
+                    on_click=lambda _, selected=index: self.exp.next_group(selected)
                 ),
                 expand=1,
                 alignment=ft.Alignment.CENTER,
             )
-            for index, word in enumerate(self.exp.word_groups[0].words)
+            for index, word in enumerate(state.word_groups[0].words)
         ]
-        self.words_grid = ft.Column(
+        self.grid = ft.Column(
             controls=[
                 ft.Row(
-                    controls=self.words[:2],
+                    controls=self.buttons[:2],
                     alignment=ft.MainAxisAlignment.CENTER,
                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
                     expand=True
                 ),
                 ft.Row(
-                    controls=self.words[2:4],
+                    controls=self.buttons[2:4],
                     alignment=ft.MainAxisAlignment.CENTER,
                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
                     expand=True
@@ -59,16 +61,6 @@ class WordExperimentView(ft.View):
             spacing=16,
             expand=True,
         )
-        self.exp.listeners["show_plus"] = self.show_plus
-        self.exp.listeners["show_word_group"] = self.show_word_group
-
-        self.queue = asyncio.Queue()
-        self.ui_loop = asyncio.get_running_loop()
-        self.process_state = {"process_started": False}
-
-        self.exp.add_listener(self.on_new_coords)
-
-        self.exp.add_finish_listener(self.stop_experiment)
 
         self.container.controls = [
             ft.Column(
@@ -114,6 +106,13 @@ class WordExperimentView(ft.View):
 
     def show_plus(self):
         """Show a big "+" in the middle of the screen for a time set in AppSettings"""
+        self.ui_loop.call_soon_threadsafe(self.page.run_task, self._show_plus)
+
+    async def _show_plus(self):
+        """Apply the "+" display update from Flet's event loop."""
+
+        print("show plus")
+
         self.container.controls = [
             ft.Icon(
                 icon=ft.Icons.ADD,
@@ -123,37 +122,34 @@ class WordExperimentView(ft.View):
         ]
         self.page.update()
 
-    async def show_word_group(self):
+    def show_word_group(self, word_group: WordGroup):
         """Show the 4 words of the current word_group in 4 buttons, each one in a quater of the screen, with a size set in AppSettings"""
-        current_words = self.exp.get_current_words()
+        self.ui_loop.call_soon_threadsafe(self.page.run_task, self._show_word_group, word_group)
 
-        for word_index, button in enumerate(self.words):
+    async def _show_word_group(self, word_group: WordGroup):
+        """Apply the word group display update from Flet's event loop."""
+        current_words = word_group.words
+
+
+        print("show word_group")
+
+        for word_index, button in enumerate(self.buttons):
             content = button.content.content
             if content:
                 content.value = current_words[word_index]
 
-        self.container.controls = [self.words_grid]
+        self.container.controls = [self.grid]
         self.page.update()
-        await playSound(self.exp.get_current_sound())
 
-    def on_new_coords(self, cx, cy):
-        """Called when the tracker finished to guess the Gaze coordinates"""
-        self.ui_loop.call_soon_threadsafe(self.queue.put_nowait, (cx, cy))
 
-    async def start_experiment(self, _):
+    def start_experiment(self, _):
         """Start an experiment"""
-        if not self.process_state["process_started"]:
-            self.process_state["process_started"] = True
-        await self.exp.start()
+        self.exp.start()
 
     def stop_experiment(self):
         """Stop the running experiment"""
-        self.exp.stop()
-        self.ui_loop.call_soon_threadsafe(self.queue.put_nowait, None)
-        self.process_state["process_started"] = False
-        self.page.update()
 
-        self.page.run_task(self.page.push_route, "/Results")
+        self.ui_loop.call_soon_threadsafe(self.page.run_task, self.page.push_route, "/Results")
 
     async def back_to_main_menu(self, page: ft.Page):
         """Go back to main menu"""

@@ -34,4 +34,4 @@ LR: float = 1e-4
 EPOCH: int = 10
 BATCH_SIZE: int = 4
 
-TEXT_SIZE: float = 0.5
+TEXT_SIZE: float = 1.0

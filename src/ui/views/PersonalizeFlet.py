@@ -1,8 +1,9 @@
-from typing import Callable
 import asyncio
+from typing import Callable
 
 import flet as ft
 from experiments.wordExperiment.WordGroup import WordGroup
+from flet.controls import alignment
 from ui.AppSettings import AppSettingsEnum
 from ui.AppState import AppState
 from ui.FletUtils import playSound, loadCSV, saveExperimentToCSV
@@ -68,6 +69,16 @@ class PersonalizeView(ft.View):
             value_picker=NumberPicker(step=1, minimum=0),
             description="Number of gaze the app will try to make every second",
             data=page.data.settings)
+        self.sound_repeat = AppSettingsWidget(
+            setting=AppSettingsEnum.SOUND_REPEAT,
+            value_picker=NumberPicker(step=1, minimum=0),
+            description="Number of times the sound is repeated",
+            data=page.data.settings)
+        self.sound_interval = AppSettingsWidget(
+            setting=AppSettingsEnum.SOUND_INTERVAL,
+            value_picker=NumberPicker(step=0.5, minimum=0),
+            description="Time between 2 sound repeat",
+            data=page.data.settings)
         self.button_size = AppSettingsWidget(
             setting=AppSettingsEnum.BUTTONS_SIZE,
             value_picker=SliderPicker(),
@@ -91,13 +102,17 @@ class PersonalizeView(ft.View):
                             self.max_time_to_choose,
                             self.time_between,
                             self.gaze_per_second,
+                            
+                            self.sound_repeat,
+                            self.sound_interval,
+
                             self.button_size,
                             self.button_preview,
                             ft.Row(
                                 controls=[
-                                    ft.Button(content="Load CSV", on_click=lambda _: page.run_task(loadCSV, page), scale = TEXT_SIZE),
-                                    ft.Button(content="Save To CSV", on_click=lambda _: page.run_task(self.save_experience, state), scale = TEXT_SIZE),
-                                    ft.Button(content="Go Back", on_click=lambda _: page.run_task(self.go_back), scale = TEXT_SIZE),
+                                    ft.Button(content="Load CSV", on_click=lambda _: page.run_task(loadCSV, page), scale=TEXT_SIZE),
+                                    ft.Button(content="Save To CSV", on_click=lambda _: page.run_task(self.save_experience, state), scale=TEXT_SIZE),
+                                    ft.Button(content="Go Back", on_click=lambda _: page.run_task(self.go_back), scale=TEXT_SIZE),
                                 ],
                                 alignment=ft.MainAxisAlignment.SPACE_EVENLY
                             )
@@ -147,10 +162,11 @@ class PersonalizeView(ft.View):
             self.reorderable_list.controls.append(GroupCustomization(group_index=index, word_group=group, update_callback=self.update_list_controls))
         if go_down:
             async def scroll_delayed():
-                await asyncio.sleep(0.05) # Un battement de cil pour laisser le rendu se faire
+                await asyncio.sleep(0.05)  # Un battement de cil pour laisser le rendu se faire
                 await self.reorderable_list.scroll_to(offset=-1)
 
             self.page.run_task(scroll_delayed)
+
 
 @ft.control
 class AddGroupWidget(ft.Container):
@@ -237,7 +253,7 @@ class SoundPicker(ft.Container):
 
         self.word_group = word_group
 
-        self.choose_sound_button = ft.Button(content=word_group.sound, scale = TEXT_SIZE)
+        self.choose_sound_button = ft.Button(content=word_group.sound, scale=TEXT_SIZE)
         self.play_sound_button = ft.IconButton(
             icon=ft.Icons.PLAY_ARROW,
             icon_color=ft.Colors.BLUE,
@@ -249,7 +265,7 @@ class SoundPicker(ft.Container):
         )
         self.border = ft.Border.all(1, ft.Colors.GREY)
         self.border_radius = ft.BorderRadius.all(15)
-        self.animate=ft.Animation(duration=1000, curve=ft.AnimationCurve.BOUNCE_IN_OUT)
+        self.animate = ft.Animation(duration=1000, curve=ft.AnimationCurve.BOUNCE_IN_OUT)
 
         self.padding = ft.Padding.all(5)
 
@@ -301,7 +317,7 @@ class GroupCustomization(ft.Container):
                         self.sound_picker,
                         ft.Row(
                             controls=[
-                                ft.Text("Correct Answer : ", size = 24 * TEXT_SIZE),
+                                ft.Text("Correct Answer : ", size=24 * TEXT_SIZE),
                                 self.correct_answer_dropdown,
 
                             ]
@@ -321,6 +337,7 @@ class GroupCustomization(ft.Container):
                 )
             ],
             expand=1,
+            alignment = ft.MainAxisAlignment.SPACE_EVENLY
         )
 
     def update_correct_dropdown(self):
@@ -335,7 +352,6 @@ class GroupCustomization(ft.Container):
         if self.word_group.sound == "":
             self.sound_picker.border = ft.Border.all(3, ft.Colors.RED)
             res = False
-
 
         for word in self.word_group.words:
             if word == "":
@@ -410,7 +426,7 @@ class DragTile(ft.DragTarget):
                 on_change=lambda e, tile_index=index: on_change(tile_index, e.control.value),
                 expand=True,
                 border=ft.InputBorder.NONE,
-                text_style = ft.TextStyle(size=24 * TEXT_SIZE)
+                text_style=ft.TextStyle(size=24 * TEXT_SIZE)
             ),
             padding=ft.Padding().all(5),
             border=ft.Border.all(1, ft.Colors.BLACK),
@@ -482,7 +498,7 @@ class AppSettingsWidget(ft.Container):
             controls=[
                 ft.Icon(ft.Icons.SETTINGS, color=ft.Colors.BLUE, expand=1),
                 self.value_picker,
-                ft.Text(value=self.description, weight=ft.FontWeight.W_600,size = 16 * TEXT_SIZE , expand=8),
+                ft.Text(value=self.description, weight=ft.FontWeight.W_600, size=16 * TEXT_SIZE, expand=8),
             ],
             tight=True
         )
@@ -590,12 +606,12 @@ class ButtonSizePreview(ft.Container):
 
     def __init__(self, size: float = 0.5, **kwargs):
         super().__init__(**kwargs)
-        self.size = size* TEXT_SIZE
+        self.size = size * TEXT_SIZE
 
         self.aspect_ratio = 16 / 9
         self.buttons = [
             ft.Container(
-                content=ft.Button(content=ft.Text(content, size=76 * self.size )),
+                content=ft.Button(content=ft.Text(content, size=76 * self.size)),
                 expand=1,
                 alignment=ft.Alignment.CENTER,
             )
