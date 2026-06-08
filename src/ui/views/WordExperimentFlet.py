@@ -1,7 +1,7 @@
 import asyncio
 
 import flet as ft
-from experiments.wordExperiment.WordExperiment_new import WordExperiment
+from experiments.wordExperiment.WordExperiment import WordExperiment
 from experiments.wordExperiment.WordGroup import WordGroup
 from ui.AppState import AppState
 from utils.config import TEXT_SIZE
@@ -89,7 +89,7 @@ class WordExperimentView(ft.View):
                     ),
                     ft.Button(
                         content="Main Menu",
-                        on_click=lambda _: page.run_task(self.back_to_main_menu, self.page), scale=self.app_scale
+                        on_click=lambda _: page.run_task(back_to_main_menu, self.page), scale=self.app_scale
                     ),
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
@@ -111,8 +111,6 @@ class WordExperimentView(ft.View):
     async def _show_plus(self):
         """Apply the "+" display update from Flet's event loop."""
 
-        print("show plus")
-
         self.container.controls = [
             ft.Icon(
                 icon=ft.Icons.ADD,
@@ -130,9 +128,6 @@ class WordExperimentView(ft.View):
         """Apply the word group display update from Flet's event loop."""
         current_words = word_group.words
 
-
-        print("show word_group")
-
         for word_index, button in enumerate(self.buttons):
             content = button.content.content
             if content:
@@ -140,7 +135,6 @@ class WordExperimentView(ft.View):
 
         self.container.controls = [self.grid]
         self.page.update()
-
 
     def start_experiment(self, _):
         """Start an experiment"""
@@ -151,6 +145,6 @@ class WordExperimentView(ft.View):
 
         self.ui_loop.call_soon_threadsafe(self.page.run_task, self.page.push_route, "/Results")
 
-    async def back_to_main_menu(self, page: ft.Page):
-        """Go back to main menu"""
-        await page.push_route("/")
+async def back_to_main_menu(page: ft.Page):
+    """Go back to main menu"""
+    await page.push_route("/")

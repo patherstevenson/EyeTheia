@@ -10,21 +10,6 @@ from ui.FletUtils import playSound
 from utils.config import SCREEN_WIDTH, SCREEN_HEIGHT
 
 
-def get_button_index_from_coords(cx, cy):
-    """Return button index based on where the user is looking
-    :return : The index of the looked button. 4 if no face is detected"""
-    if cx == -1 & cy == -1:
-        return 4
-    else:
-        result = 0
-        if cx > (SCREEN_WIDTH / 2):
-            result = result + 1
-        if cy > (SCREEN_HEIGHT / 2):
-            result = result + 2
-
-        return result
-
-
 class WordExperiment:
     def __init__(self, state: AppState, show_plus, show_words, finish, ):
         self.thread = None
@@ -116,8 +101,6 @@ class WordExperiment:
     def gaze_loop(self):
         """Run a loop in a different thread to store every points the user looked at"""
 
-        print("gaze_loop")
-
         if self.time_between_gaze <= 0:
             return
 
@@ -140,3 +123,17 @@ class WordExperiment:
             self.state.results[self.index].gaze_score[get_button_index_from_coords(x, y)] += 1
 
             cpt += 1
+
+def get_button_index_from_coords(cx, cy):
+    """Return button index based on where the user is looking
+    :return : The index of the looked button. 4 if no face is detected"""
+    if cx == -1 & cy == -1:
+        return 4
+    else:
+        result = 0
+        if cx > (SCREEN_WIDTH / 2):
+            result = result + 1
+        if cy > (SCREEN_HEIGHT / 2):
+            result = result + 2
+
+        return result
