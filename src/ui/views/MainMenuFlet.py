@@ -31,21 +31,10 @@ def MainMenuView(page: ft.Page, state: AppState):
             scale=buttons_scale
         ),
         MoveToButton(
-            content="FastResults",
-            direction="/Results",
-            scale=buttons_scale
-        ),
-        MoveToButton(
             content="Personalize",
             direction="/Personalize",
             scale=buttons_scale
         ),
-        # MoveToButton(
-        #     content="HeatMap",
-        #     direction="/HeatMap",
-        #     scale=buttons_scale
-        # ),
-
     ]
 
     column = ft.Column(
