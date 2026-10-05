@@ -1,5 +1,9 @@
 # EyeTheia
 
+**ICPR 2026 — IAPR TC22 Reproducible Research in Pattern Recognition (RRPR) Badge**
+
+[Springer Paper](https://link.springer.com/chapter/10.1007/978-3-032-31438-3_35) · [RRPR Award](https://iapr-tc22-rrl.github.io/icpr2026/results/) · [arXiv](https://arxiv.org/abs/2601.06279)
+
 ## Overview
 
 **EyeTheia** is an open-source, cross-platform toolbox for **webcam-based 2D gaze estimation**.
@@ -28,6 +32,16 @@ EyeTheia can be used in:
 * Laboratory experiments
 
 Unlike dedicated eye trackers, EyeTheia only requires a standard webcam and commodity hardware.
+
+---
+## Publication
+
+EyeTheia was published at the **28th International Conference on Pattern Recognition (ICPR 2026)** in the *Lecture Notes in Computer Science (LNCS)* proceedings.
+
+- **Paper:** [EyeTheia: A Lightweight and Accessible Eye-Tracking Toolbox](https://link.springer.com/chapter/10.1007/978-3-032-31438-3_35)
+- **DOI:** [10.1007/978-3-032-31438-3_35](https://doi.org/10.1007/978-3-032-31438-3_35)
+- **Proceedings:** *Pattern Recognition – ICPR 2026*, LNCS, vol. 16821, pp. 526–541
+- **Reproducibility:** EyeTheia received the **IAPR TC22 Reproducible Research in Pattern Recognition (RRPR) Badge** at ICPR 2026.
 
 ---
 
@@ -435,11 +449,13 @@ For training or reproducing training experiments, the dataset must be downloaded
 
 # Experiments and Reproducibility
 
-This repository contains the code, pretrained models, notebooks, logs, and analysis scripts used to generate the results reported in:
+This repository contains the code, pretrained models, notebooks, logs, experimental data, and analysis scripts used to generate the results reported in:
 
-> [EyeTheia: A Lightweight and Accessible Eye-Tracking Toolbox](https://arxiv.org/abs/2601.06279)
+> **S. Pather, N. Martignène, A. Bugnet, F. Boutaleb, F. D’Hondt, and D. Santana Maia, "EyeTheia: A Lightweight and Accessible Eye-Tracking Toolbox," ICPR 2026, Lecture Notes in Computer Science, vol. 16821, pp. 526–541.**
 
-accepted at ICPR 2026.
+The final published paper is available from [Springer Nature](https://link.springer.com/chapter/10.1007/978-3-032-31438-3_35).
+
+EyeTheia was awarded the **IAPR TC22 Reproducible Research in Pattern Recognition (RRPR) Badge** at ICPR 2026. The official list of awarded papers is available on the [ICPR 2026 RRPR results page](https://iapr-tc22-rrl.github.io/icpr2026/results/).
 
 ---
 
@@ -601,7 +617,9 @@ Run all notebook cells to regenerate the reported figures.
 
 ---
 
-# Experimental Platform
+# Experimental Platform**ICPR 2026 — IAPR TC22 Reproducible Research in Pattern Recognition (RRPR) Badge**
+
+[Springer Paper](https://link.springer.com/chapter/10.1007/978-3-032-31438-3_35) · [RRPR Award](https://iapr-tc22-rrl.github.io/icpr2026/results/) · [arXiv](https://arxiv.org/abs/2601.06279)
 
 EyeTheia can be integrated into external experimental platforms.
 
@@ -682,20 +700,22 @@ for details.
 
 # Citation
 
-If you use EyeTheia in your research, please cite:
+If you use EyeTheia in your research, please cite the published ICPR paper:
 
 ```bibtex
-@misc{pather2026eyetheia,
-  title         = {EyeTheia: A Lightweight and Accessible Eye-Tracking Toolbox},
-  author        = {Stevenson Pather and Niels Martignène and Arnaud Bugnet and Fouad Boutaleb and Fabien D'Hondt and Deise Santana Maia},
-  year          = {2026},
-  eprint        = {2601.06279},
-  archivePrefix = {arXiv},
-  primaryClass  = {cs.CV},
-  url           = {https://arxiv.org/abs/2601.06279},
-  note          = {Accepted at the 28th International Conference on Pattern Recognition (ICPR 2026)}
+@inproceedings{pather2027eyetheia,
+  author    = {Pather, Stevenson and Martign{\`e}ne, Niels and Bugnet, Arnaud and Boutaleb, Fouad and D'Hondt, Fabien and Santana Maia, Deise},
+  title     = {EyeTheia: A Lightweight and Accessible Eye-Tracking Toolbox},
+  booktitle = {Pattern Recognition},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {16821},
+  pages     = {526--541},
+  publisher = {Springer},
+  address   = {Cham},
+  year      = {2027},
+  doi       = {10.1007/978-3-032-31438-3_35},
+  url       = {https://doi.org/10.1007/978-3-032-31438-3_35}
 }
 ```
-The BibTeX entry will be updated once the final Springer Nature proceedings version becomes available.
 
-Please update this entry with the final proceedings information once available.
+The paper was presented at the **28th International Conference on Pattern Recognition (ICPR 2026)** and published in the Springer *Lecture Notes in Computer Science* proceedings.
