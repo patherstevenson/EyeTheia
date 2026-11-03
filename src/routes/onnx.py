@@ -25,9 +25,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-import copy
-import torch.nn as nn
 from routes.dependency import get_tracker
+from tracker.ExportLRN import replace_crossmaplrn_for_onnx
 
 router = APIRouter(prefix="/onnx", tags=["onnx"])
 
@@ -290,39 +289,6 @@ def _build_dummy_inputs(
         preprocessing,
     )
 
-def _replace_crossmaplrn_for_onnx(module: nn.Module) -> nn.Module:
-    """
-    Return a deepcopy of the module where each CrossMapLRN2d is replaced
-    by torch.nn.LocalResponseNorm for ONNX export compatibility.
-    """
-    model_copy = copy.deepcopy(module)
-
-    def _recursive_replace(parent: nn.Module) -> None:
-        for name, child in parent.named_children():
-            class_name = child.__class__.__name__
-
-            if class_name == "CrossMapLRN2d":
-                # Try to reuse attributes if they exist on the custom module.
-                size = getattr(child, "size", 5)
-                alpha = getattr(child, "alpha", 1e-4)
-                beta = getattr(child, "beta", 0.75)
-                k = getattr(child, "k", 1.0)
-
-                setattr(
-                    parent,
-                    name,
-                    nn.LocalResponseNorm(
-                        size=size,
-                        alpha=alpha,
-                        beta=beta,
-                        k=k,
-                    ),
-                )
-            else:
-                _recursive_replace(child)
-
-    _recursive_replace(model_copy)
-    return model_copy
 
 def _export_model_to_onnx(
     model: torch.nn.Module,
@@ -331,7 +297,7 @@ def _export_model_to_onnx(
     *,
     opset: int = DEFAULT_ONNX_OPSET,
 ) -> Dict[str, Any]:
-    export_model = _replace_crossmaplrn_for_onnx(model)
+    export_model = replace_crossmaplrn_for_onnx(model)
     export_model.eval()
 
     dummy_inputs, input_names, output_names, input_shapes, output_shapes, preprocessing = _build_dummy_inputs(
