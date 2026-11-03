@@ -617,9 +617,7 @@ Run all notebook cells to regenerate the reported figures.
 
 ---
 
-# Experimental Platform**ICPR 2026 — IAPR TC22 Reproducible Research in Pattern Recognition (RRPR) Badge**
-
-[Springer Paper](https://link.springer.com/chapter/10.1007/978-3-032-31438-3_35) · [RRPR Award](https://iapr-tc22-rrl.github.io/icpr2026/results/) · [arXiv](https://arxiv.org/abs/2601.06279)
+# Experimental Platform
 
 EyeTheia can be integrated into external experimental platforms.
 
